@@ -56,7 +56,14 @@ function check(arbitrary, property){
 				return;
 			}
 			for(let value of items){
-				let err = doThrow(property, value);
+				let err;
+				try{
+					property(firstValue);
+				}
+				catch(e){
+					err = e;
+					break;
+				}
 				if(err){
 					stack.push([value, err, level+1]);
 					if(level+1 > lastLevel){
