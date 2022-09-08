@@ -59,6 +59,8 @@ function withoutZero(arr, base){
 	}
 	cutZero(arr);
 	//Получен массив значений 1..base
+	
+	return arr;
 }
 
 /**
