@@ -21,7 +21,7 @@ const ArrayArb = ArbitraryBase.extend(
 			}
 		},
 
-		convert: function(value){
+		_convert: function(value){
 			const size = this._size, type = this._type;
 			
 			if(typeof size !== 'number'){
@@ -47,3 +47,4 @@ const ArrayArb = ArbitraryBase.extend(
 		}
 	}
 );
+

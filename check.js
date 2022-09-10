@@ -1,6 +1,10 @@
 const random = require('@grunmouse/big-random');
 const assert = require('assert');
 
+const TupleArb = require('./arbitrary/tuple.js');
+
+const InnerTuple = TupleArb.extend({});
+
 function doThrow(fun, arg){
 	try{
 		fun(arg);
@@ -19,7 +23,12 @@ function check(arbitrary, property){
 	for(let i=0; i<count; ++i){
 		firstValue = arbitrary.generate();
 		try{
-			property(firstValue);
+			if(arbitrary instanceof InnerTuple){
+				property(...firstValue);
+			}
+			else{
+				property(firstValue);
+			}
 		}
 		catch(e){
 			firstError = e;
@@ -28,7 +37,9 @@ function check(arbitrary, property){
 	}
 	
 	if(!firstError){
-		return;
+		return {
+			
+		};
 	}
 	
 	/*
@@ -53,12 +64,17 @@ function check(arbitrary, property){
 			gray.add(value);
 			let items = arbitrary.shrink(value);
 			if(!items || !items[Symbol.iterator]){
-				return;
+				continue;
 			}
 			for(let value of items){
 				let err;
 				try{
-					property(firstValue);
+					if(arbitrary instanceof InnerTuple){
+						property(...firstValue);
+					}
+					else{
+						property(firstValue);
+					}
 				}
 				catch(e){
 					err = e;
@@ -86,6 +102,28 @@ function check(arbitrary, property){
 	
 }
 
+function property(name, ...args){
+	const property = args.pop();
+	const arbs = args;
+	const arbitrary = arbs.length>1 ? new InnerTuple(arbs) : arbs[0];
+	if(!arbitrary){
+		throw new Error('No arbitrary');
+	}
+	
+	it(name, function(){
+		let res = check(arbitrary, property);
+		if(res && res.err){
+			let test = this.test;
+			/*
+			что-нибудь про вывод в файл
+			[test.file, test.fullTitle(), res.rndState, res.value, res.err]
+			*/
+			throw res.err;
+		}
+	});
+}
+
 module.exports = {
-	check
+	check,
+	property
 };

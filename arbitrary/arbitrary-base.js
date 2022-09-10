@@ -8,7 +8,7 @@ const ArbitraryBase = Class.extend(
 	{
 		pregen:(b)=>(a=0n)=>(random.randomBigUintLim(b-a)+a),
 		
-		extend:(klass, proto){
+		extend:function(klass, proto){
 			if(!proto){
 				proto = klass;
 				klass = undefined;
@@ -26,7 +26,7 @@ const ArbitraryBase = Class.extend(
 	{
 		init:function(limit){
 			if(limit){
-				let limit = BigInt(limit);
+				limit = BigInt(limit);
 				this.limit = limit;
 				this.size = limit+1n;
 				this.pregen = this.Class.pregen(limit);
@@ -35,10 +35,23 @@ const ArbitraryBase = Class.extend(
 		
 		generate:function(){
 			let raw = this.pregen();
-			return this.convert(raw);
+			return this._finalConvert(this._convert(raw));
 		},
 		
 		convert:function(value){
+			let raw = value.call ? value(this.limit) : value;
+			return this._finalConvert(this._convert(raw));
+		},
+		
+		shrink:function(){
+			return;
+		},
+		
+		_convert:function(value){
+			return value;
+		},
+		
+		_finalConvert:function(value){
 			return value;
 		},
 		

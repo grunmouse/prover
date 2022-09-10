@@ -254,7 +254,7 @@
 			Class.prototype.Class = Class.prototype.constructor = Class;
 
 
-			var args = Class.setup.apply(Class, [_super_class, klass, proto]));
+			var args = Class.setup.apply(Class, [_super_class, klass, proto]);
 
 			if ( Class.init ) {
 				Class.init.apply(Class, args || []);

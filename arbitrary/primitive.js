@@ -8,9 +8,9 @@ const IntegerArb = ArbitraryBase.extend(
 		setup:convert.ensureIntegerArgs,
 		
 		init:function(min, max){
-			this._super({limit:max - min});
+			this._super(max - min);
 
-			this.convert = convert.offsetInt(min);
+			this._convert = convert.offsetInt(min);
 		}
 	}
 );
@@ -20,9 +20,9 @@ const BigIntegerArb = ArbitraryBase.extend(
 		setup:convert.ensureIntegerArgs,
 		
 		init:function(min, max){
-			this._super({limit:max - min});
+			this._super(max - min);
 			
-			this.convert = convert.offsetBigInt(min);
+			this._convert = convert.offsetBigInt(min);
 		}
 	}
 );
@@ -30,10 +30,10 @@ const BigIntegerArb = ArbitraryBase.extend(
 const BooleanArb = ArbitraryBase.extend(
 	{
 		init:function(){
-			this._super({limit:1});
+			this._super(1);
 		},
 		
-		convert:function(value){
+		_convert:function(value){
 			return !!value;
 		}
 	}
@@ -44,10 +44,10 @@ const ElementArb = ArbitraryBase.extend(
 		init:function(arr){
 			this._elements = arr;
 			let limit = arr.length-1;
-			this._super({limit});
+			this._super(limit);
 		},
 		
-		convert:function(value){
+		_convert:function(value){
 			return this._elements[value];
 		}
 	}
@@ -69,23 +69,24 @@ const SimpleFloatArbBase = ArbitraryBase.extend(
 	
 	{
 		init:function(min, max){
-			this._super({limit:0xFFFFFFFFn});
+			[min, max] = convert.ensureFloatArgs(min, max);
+			this._super(0xFFFFFFFFn);
 			this._min = min;
 			this._max = max;
 			this.expandFloat = convert.expandFloat(min, max);
 		},
 		
-		convert:function(value){
+		_convert:function(value){
 			const f = this.toFloat(value);
 			return this.expandFloat(f);
 		}
 	}
 );
 
-const I_I = SimpleFloatArbBase.extend(true, true);
-const I_O = SimpleFloatArbBase.extend(true, false);
-const O_O = SimpleFloatArbBase.extend(false, false);
-const O_I = SimpleFloatArbBase.extend(false, true);
+const O_O = SimpleFloatArbBase.extend(true, true);
+const O_I = SimpleFloatArbBase.extend(true, false);
+const I_I = SimpleFloatArbBase.extend(false, false);
+const I_O = SimpleFloatArbBase.extend(false, true);
 
 
 const bool = new BooleanArb();
@@ -110,7 +111,7 @@ const bigints = {};
 
 module.exports = {
 	bool,
-	elements,
+	elements:ElementArb,
 	integer:IntegerArb,
 	bigint:BigIntegerArb,
 	

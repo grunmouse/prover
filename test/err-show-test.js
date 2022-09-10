@@ -1,14 +1,22 @@
 const {check} = require('../check.js');
 const assert = require('assert');
 const Mocha = require('Mocha');
+
+
 describe('show error', ()=>{
 	it('show error', function(){
+		
 		let arb = {generate:()=>(void(0)), shrink:()=>([])};
 		let prop = function(){
 			assert(false);
 		}
-		let err = check(arb, prop);
-		throw err.err;
+		let res = check(arb, prop);
+		
+		let test = this.test;
+		
+		console.log([test.file, test.fullTitle(), res.rndState, res.value, res.err]);
+		
+		throw res.err;
 		
 		//console.log(this);
 	});
