@@ -1,6 +1,7 @@
 const MASK32 = 0xFFFFFFFF; //Часто встречается
 const OVER32 = MASK32+1;
 const BMASK32 = 0xFFFFFFFFn;
+const BMASK52 = 0x1FFFFFFFFFFFFFn;
 
 /***
  * Исправляет верхний и нижний целый предел

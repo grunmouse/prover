@@ -7,16 +7,31 @@ const UnionArb = ArbitraryBase.extend(
 	{
 		init:function(arbs){
 			this._fields = arbs;
+			if(arbs.every(a=>(a.count))){
+				let count = arbs.reduce((akk, a)=>(akk+a), 0n);
+				this._super(count-1n);
+			}
+			else{
+				this._super();
+			}			
 		},
 
-		
-		generate: function(){
-			let index = this.Class.pregen(this._fields.length -1)();
-			let item = this._fields[index];
-			return item.generate();
+		_convert: function(value){
+			let arbs = this._fields, len = arbs.length;
+			for(let i=0; i<=len; ++i){
+				let arb = arbs[i];
+				if(value > arb.limit){
+					value -= arb.count;
+				}
+				else{
+					return arb.convert(value);
+				}
+			}
+			throw new Error('Неправильно посчитано количество данных в Union');
 		}
+		
 	}
 );
 
 
-module.exports = TupleArb;
+module.exports = UnionArb ;

@@ -1,6 +1,6 @@
 	// if we are initializing a new class
 	var initializing = false,
-        point = '.',
+        //point = '.',
 		noop = function(){},
 		makeArray = (arr)=>Array.from(arr),
 		isFunction = (fun)=>(fun && fun.call),

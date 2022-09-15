@@ -33,9 +33,13 @@ const ArbitraryBase = Class.extend(
 			}
 		},
 		
-		generate:function(){
+		_generate:function(){
 			let raw = this.pregen();
-			return this._finalConvert(this._convert(raw));
+			return this._convert(raw);
+		},
+		
+		generate:function(){
+			return this._finalConvert(this._generate());
 		},
 		
 		convert:function(value){

@@ -1,3 +1,7 @@
+const MASK32 = 0xFFFFFFFF; //Часто встречается
+const OVER32 = MASK32+1;
+const BMASK32 = 0xFFFFFFFFn;
+const BMASK52 = 0x1FFFFFFFFFFFFFn;
 
 const convert = require('../convert/index.js');
 
@@ -8,9 +12,33 @@ const IntegerArb = ArbitraryBase.extend(
 		setup:convert.ensureIntegerArgs,
 		
 		init:function(min, max){
+			this.min = min;
+			this.max = max;
 			this._super(max - min);
 
 			this._convert = convert.offsetInt(min);
+		}
+		
+		resize: function(fun){
+			let [min, max] = fun(this.min, this.max);
+			
+			return new IntegrArb(min, max);
+		}
+	}
+);
+
+const NatArb = IntegerArb.extend(
+	{
+		setup:function(max){
+			return [0, max || MASK32];
+		}
+	}
+);
+
+const PositArb = IntegerArb.extend(
+	{
+		setup:function(max){
+			return [1, max || MASK32];
 		}
 	}
 );
@@ -114,7 +142,10 @@ module.exports = {
 	elements:ElementArb,
 	integer:IntegerArb,
 	bigint:BigIntegerArb,
+	nat:NatArb,
+	posit:PositArb,
 	
+	'float':I_O,
 	i_i:I_I,
 	i_o:I_O,
 	o_i:O_I,
