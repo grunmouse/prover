@@ -15,6 +15,7 @@ const ConstArb = ArbitraryBase.extend(
 			if(value != 0n){
 				throw new RangeError('Error convert to const');
 			}
+			return this._value;
 		},
 		
 		_generate: function(){
