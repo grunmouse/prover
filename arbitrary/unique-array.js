@@ -3,7 +3,7 @@ const convert = require('../convert/index.js');
 
 const  {
 	uniqueRandom
-} = requery('../random/unique-random.js');
+} = require('../random/unique-random.js');
 
 const ArbitraryBase = require('./arbitrary-base.js');
 
@@ -17,7 +17,7 @@ const UArrayArb = ArbitraryBase.extend(
 				size = size();
 			}
 			this._size = size;
-			if(!type.count){
+			if(!type.size){
 				throw new TypeError('A type ' + type + ' is not support unique');
 			}
 			this._type = type;
@@ -29,7 +29,7 @@ const UArrayArb = ArbitraryBase.extend(
 			if(size.generate){
 				size = size.generate();
 			}
-			let raw = uniqueRandom(tsize, type.pregen);
+			let raw = uniqueRandom(BigInt(size), type.pregen);
 			return raw.map(type.proxy('convert'));
 		}
 	}

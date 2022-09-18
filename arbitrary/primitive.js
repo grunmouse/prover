@@ -17,7 +17,7 @@ const IntegerArb = ArbitraryBase.extend(
 			this._super(max - min);
 
 			this._convert = convert.offsetInt(min);
-		}
+		},
 		
 		resize: function(fun){
 			let [min, max] = fun(this.min, this.max);

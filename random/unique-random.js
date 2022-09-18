@@ -33,18 +33,18 @@ class PermutatedTail extends Map{
 /**
  * @function uniqueRandom - генерирует массив уникальных случайных значений с помощью функции генератора
  * @param n : Int - количество генерируемых значений
- * @param gen : Pregen<T> - генератор случайных значений
- * @return Array[n]<T> - массив уникальных случайных значений
+ * @param gen : Pregen - генератор случайных значений
+ * @return Array[n]<BigInt> - массив уникальных случайных значений
  */
 function uniqueRandom(n, gen){
 	let tail = new PermutatedTail();
 
 	let result = [];
 	for(let i = 0; i<n; ++i){
-		let k = gen(i);
+		let alt = BigInt(i);
+		let k = gen(alt);
 		let v = tail.get(k);
 		result.push(v);
-		let alt = gen.T(i);
 		tail.swap(k, alt);
 	}
 	

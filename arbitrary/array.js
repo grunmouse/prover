@@ -3,7 +3,7 @@ const convert = require('../convert/index.js');
 
 const ArbitraryBase = require('./arbitrary-base.js');
 
-const {integer} = require('./privitive.js');
+const {integer} = require('./primitive.js');
 
 /**
  * Массив заданной длины
@@ -16,8 +16,8 @@ const SizedArrayArb = ArbitraryBase.extend(
 			}
 			this._size = size;
 			this._type = type;
-			if(type.count){
-				let count = convert.countWithZero(size, type.count);
+			if(type.size){
+				let count = convert.countWithZero(BigInt(size), type.size);
 				let limit = count - 1n;
 				this._super(limit);
 			}
@@ -29,19 +29,20 @@ const SizedArrayArb = ArbitraryBase.extend(
 		_convert: function(value){
 			const size = this._size, type = this._type;
 			
-			if(!type.count){
-				throw new Error('Array type not has count of random');
+			if(!type.size){
+				throw new Error('Array item type not has size of random');
 			}
 			
-			let arr = convert.decomp(value, type.count).map(type.proxy('convert'));
+			let arr = convert.decomp(value, type.size);//.map(type.proxy('convert'));
+			arr = Array.from({length:Number(size)}, (_, i)=>(type.convert(arr[i]||0)));
 			return arr;
-		}
+		}/*,
 		
 		_generate: function(){
 			const size = this._size, type = this._type;
-			let arr = Array.from({length:size}, type.proxy('generate'));
+			let arr = Array.from({length:Number(size)}, type.proxy('generate'));
 			return arr;
-		}
+		}*/
 	}
 );
 
@@ -57,8 +58,8 @@ const LimitedArrayArb = ArbitraryBase.extend(
 			this._size = size;
 			this._type = type;
 
-			if(type.count){
-				let count = convert.countWithoutZero(size, type.count);
+			if(type.size){
+				let count = convert.countWithoutZero(BigInt(size), type.size);
 				let limit = count - 1n;
 				this._super(limit);
 			}
@@ -71,25 +72,25 @@ const LimitedArrayArb = ArbitraryBase.extend(
 		_convert: function(value){
 			const size = this._size, type = this._type;
 			
-			if(!type.count){
-				throw new Error('Array type not has count of random');
+			if(!type.size){
+				throw new Error('Array type not has size of random');
 			}
 			
-			let arr = convert.decomp(value, type.count);
-			arr = withoutZero(arr, type.count); //Преобразование в безнулевую систему счисления, с усечением нулевого хвоста
+			let arr = convert.decomp(value, type.size);
+			arr = convert.withoutZero(arr, type.size); //Преобразование в безнулевую систему счисления, с усечением нулевого хвоста
 			
-			arr = arr.map((x)=>(type.convert(x-1)));
+			arr = arr.map((x)=>(type.convert(x-1n)));
 			
 			return arr;
-		},
+		}/*,
 		
 		_generate: function(){
-			let size = this.Class.pregen(this._size)();
+			let size = this.Class.pregen(BigInt(this._size))();
 			let type = this._type;
 			
-			let arr = Array.from({length:size}, type.proxy('generate'));
+			let arr = Array.from({length:Number(size)}, type.proxy('generate'));
 			return arr;
-		}
+		}*/
 		
 		
 	}
@@ -112,7 +113,13 @@ const ArrayArb = ArbitraryBase.extend(
 				return new SizedArrayArb(range, type);
 			}
 			if(range.length){
-				let [min, max] = range;
+				let {min, max} = range;
+				if(min === 0n){
+					return new LimitedArrayArb(max, type);
+				}
+				else if(min === max){
+					return new SizedArrayArb(max, type);
+				}
 				range = {min, max}; 
 			}
 			return this._super(range, type);
@@ -128,11 +135,14 @@ const ArrayArb = ArbitraryBase.extend(
 			this._maxsize = max;
 			this._type = type;
 			
-			this._sizedPart = new SizedArrayArb(minsize, type);
-			this._limitedPart = new LimitedArrayArb(maxsize - minsize, type);
+			this._sizedPart = new SizedArrayArb(min, type);
+			this._limitedPart = new LimitedArrayArb(max - min, type);
 
-			if(type.count){
-				let count = this._sizedPart.count * this._limitedPart.count;
+			if(type.size){
+				if(typeof this._limitedPart.size === 'undefined'){
+					console.log(min, max);
+				}
+				let count = this._sizedPart.size * this._limitedPart.size;
 				let limit = count - 1n;
 				this._super(limit);
 			}
@@ -143,24 +153,24 @@ const ArrayArb = ArbitraryBase.extend(
 		},
 
 		_convert: function(value){
-			if(!this._type.count){
-				throw new Error('Array type not has count of random');
+			if(!this._type.size){
+				throw new Error('Array type not has size of random');
 			}
 			
-			const sizedPart = this._sizedPart, limitedPart = this_limitedPart;
+			const sizedPart = this._sizedPart, limitedPart = this._limitedPart;
 			
-			const forSized = value % sizedPart.count;
-			const forLimited = value / sizedPart.count;
+			const forSized = value % sizedPart.size;
+			const forLimited = value / sizedPart.size;
 			
 			let arr = sizedPart.convert(forSized).concat(limitedPart.convert(forLimited));
 			
 			return arr;
-		},
+		}/*,
 		
 		_generate: function(){
 			let arr = this._sizedPart.generate().concat(this._limitedPart.generate());
 			return arr;
-		}
+		}*/
 		
 		
 	}

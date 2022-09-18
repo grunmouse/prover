@@ -1,6 +1,6 @@
 
 const ArbitraryBase = require('./arbitrary-base.js');
-const {BigIntPacker} = require('./convert/index.js');
+const {BigIntPacker} = require('../convert/index.js');
 
 const TupleArb = ArbitraryBase.extend(
 	{
@@ -27,7 +27,12 @@ const TupleArb = ArbitraryBase.extend(
 		},
 		
 		_generate: function(){
-			return this._fields.map((arb)=>(arb.generate()));
+			if(this.pregen){
+				return this._super();
+			}
+			else{
+				return this._fields.map((arb)=>(arb.generate()));
+			}
 		}
 	}
 );

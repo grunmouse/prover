@@ -20,7 +20,10 @@ function check(arbitrary, property){
 	*/
 	let count = 100;
 	let firstValue, firstError;
+	let rndState;
+	
 	for(let i=0; i<count; ++i){
+		rndState = random.currentStateString();
 		firstValue = arbitrary.generate();
 		try{
 			if(arbitrary instanceof InnerTuple){
@@ -97,7 +100,7 @@ function check(arbitrary, property){
 	return {
 		err:lastError,
 		value:lastValue,
-		rndState: random.currentStateString()
+		rndState: rndState
 	}
 	
 }

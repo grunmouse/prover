@@ -7,10 +7,10 @@ function decomp(value, base){
 	let current = value;
 	while(current>0n){
 		arr[i] = current % base;
-		current = current\base;
+		current = current / base;
 		++i;
 	}
-	return arr[0];
+	return arr;
 }
 
 /**
@@ -18,7 +18,7 @@ function decomp(value, base){
  */
 function cutZero(arr){
 	while(arr[arr.length-1] === 0n){
-		arr.push();
+		arr.pop();
 	}
 	
 	return arr;
@@ -52,8 +52,8 @@ function withoutZero(arr, base){
 	cutZero(arr);
 	//предполагаем, что после этого в последнем элементе не ноль
 	for(let i = 0, max = arr.length-1; i<max; ++i){
-		if(arr[i]===0n){
-			arr[i] = base;
+		if(arr[i]<=0n){
+			arr[i] += base;
 			arr[i+1]--;
 		}
 	}
