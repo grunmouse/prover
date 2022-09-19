@@ -2,6 +2,7 @@ const string = require('./string-base.js');
 const tuple = require('./tuple.js');
 const {array} = require('./array.js');
 const union = require('./union.js');
+const chars = require('./char.js');
 
 const ident = function(size){
 	if(size.call){
@@ -13,7 +14,7 @@ const ident = function(size){
 	else{
 		size = size-1;
 	}
-	return string(tuple([string.identLeader, array(size, string.identBody])));
+	return string(tuple([chars.identLeader, array(size, chars.identBody)]));
 };
 
 module.exports = {

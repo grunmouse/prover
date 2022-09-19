@@ -4,7 +4,7 @@ const {
 	uint16
 } = require('./primitive.js');
 
-const cnst = require('./constants.js');s
+const cnst = require('./constants.js');
 const union = require('./union.js');
 
 const octet = uint8;

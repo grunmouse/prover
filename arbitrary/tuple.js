@@ -5,9 +5,10 @@ const {BigIntPacker} = require('../convert/index.js');
 const TupleArb = ArbitraryBase.extend(
 	{
 		init:function(arbs){
+			arbs = arbs.map((a)=>(a.call ? a() : a));
 			this._fields = arbs;
-			if(arbs.every(a=>(a.count))){
-				let count = arbs.reduce((akk, a)=>(akk*a), 1n);
+			if(arbs.every(a=>(a.size))){
+				let count = arbs.reduce((akk, a)=>(akk*a.size), 1n);
 				this._super(count-1n);
 			}
 			else{
@@ -19,7 +20,7 @@ const TupleArb = ArbitraryBase.extend(
 			const pack = new BigIntPacker(value);
 			
 			let arr = this._fields.map((arb)=>{
-				let val = pack.pop(arb.count);
+				let val = pack.pop(arb.size);
 				return arb.convert(val);
 			});
 			
