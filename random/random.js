@@ -1,14 +1,5 @@
 
-const {
-	MASK32,
-	MASK20,
-	OVER32,
-	BMASK32,
-	
-	intMask,
-	bigintMask,
-	over2
-} = require('./binary.js');
+const MASK32 = 0xFFFFFFFF; //Часто встречается
 
 const random = require('@grunmouse/big-random');
 

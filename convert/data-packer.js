@@ -50,6 +50,46 @@ const convertNull = ()=>(Uint8Array.of(1).buffer);
 
 const symMark = Symbol();
 
+function countByteLength(item){
+	switch(typeof item){
+		case 'undefined':
+			return 1;
+		case 'boolean':
+			return 1;
+		case 'number':
+			return 9;
+		case 'bigint':
+			if(item === 0n){
+				return 5;
+			}
+			else{
+				if(item<0){
+					item = -item;
+				}
+				let over2 = Number(bigint.over2(item));
+				let over256 = Math.ceiling(over2/8);
+				return 5+over256;
+			}
+		case 'string':
+			return 1 + 4 + item.length*2;
+		case 'object':
+			if(item == null){
+				return 1;
+			}
+			else if(Array.isArray(item)){
+				return item.reduce((akk, a)=>(akk+countByteLength(a)), 2);
+			}
+			else{
+				return Object.entries(item).reduce((akk, [key, value)=>{
+					return countByteLength(key)+countByteLength(value);
+				}, 2)
+			}
+		default:
+			throw new TypeError('Тип не поддерживается');
+	}
+}
+
+
 function convertBoolean(value){
 	let type = value ? 3 : 2;
 	return Uint8Array.of(type).buffer
@@ -120,6 +160,8 @@ function *genConvertAnyData(item){
 		case 'bigint':
 			yield convertBigInt(item);
 			break;
+		case 'string':
+			yield convertString(item);
 		case 'object':
 			if(item == null){
 				yield convertNull();
@@ -146,7 +188,11 @@ function *genConvertArray(arr){
 
 function *genConvertObject(obj){
 	yield Uint8Array.of(OBJECT).buffer;
-	for(let [key, item] of Object.entries(obj)){
+	let keys = Object.keys(obj);
+	keys.sort();
+	for(let i = 0; i< keys.length; ++i){
+		let key = keys[i];
+		let item = obj[key];
 		yield convertString(key);
 		yield *genConvertAnyData(item);
 	}

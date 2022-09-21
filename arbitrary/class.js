@@ -99,32 +99,6 @@
 		}
 	};
 
-    /**
-     * нужна чтобы избавиться от apply и call - могут отключать оптимизацию исполнения кода движком
-     */
-    var applyFun = function(instance, method, args){
-            var res,
-                argsLength = args.length;
-
-            if(!argsLength){
-                res = instance[method]();
-            }
-            else if(argsLength == 1){
-                res = instance[method](args[0]);
-            }
-            else if(argsLength == 2){
-                res = instance[method](args[0], args[1]);
-            }
-            else if(argsLength == 3){
-                res = instance[method](args[0], args[1], args[2]);
-            }
-            else{
-                res = instance[method](...args);
-            }
-
-            return res;
-        };
-
 	/* @Static*/
 	extend(clss, {
 		proxy: function( funcs ) {
@@ -177,13 +151,16 @@
 			var inst = this.rawInstance(),
 				args;
 
-
 			if ( inst.setup ) {
-                args = applyFun(inst, 'setup', argumentsCopy);
+				args = inst.setup(...argumentsCopy);
 			}
-
+			
+			if(!isArray(args)){
+				args = argumentsCopy;
+			}
+			
 			if ( inst.init ) {
-                applyFun(inst, 'init', isArray(args) ? args : argumentsCopy);
+				inst.init(...args);
 			}
 
 			return inst;
@@ -199,11 +176,16 @@
 			return inst;
 		},
 
-		extend: function(klass, proto ) {
+		extend: function(name, klass, proto ) {
+			if(typeof name !== 'string'){
+				proto = klass;
+				klass = name;
+				name = 'AnonimousClass';
+			}
 			// figure out what was passed
 			if (!proto ) {
 				proto = klass;
-				klass = null;
+				klass = name;
 			}
 
 			proto = proto || {};
@@ -229,35 +211,41 @@
 					return Class.newInstance(...args)
 					//return arguments.callee.extend.apply(arguments.callee, arguments)
 				} else { //we are being called w/ new
-					return this.Class.newInstance.apply(this.Class, args)
+					return this.Class.newInstance(...args)
 				}
 			}
+			Class.name = name;
+			
+			
+			Object.setPrototypeOf(Class, this);
+			
 			// Copy old stuff onto class
-			for ( name in this ) {
+			/*for ( name in this ) {
 				if ( this.hasOwnProperty(name) ) {
 					Class[name] = this[name];
 				}
-			}
+			}*/
             //Take care of special props
-            copyNonEnumerableProps(Class, this);
+            //copyNonEnumerableProps(Class, this);
 
 			// copy new props on class
 			inheritProps(klass, this, Class);
 
 			// set things that can't be overwritten
-			extend(Class, {
+			/*extend(Class, {
 				prototype: _prototype,
 				constructor: Class
-			});
+			});*/
+			Class.prototype = _prototype;
 
 			//make sure our prototype looks nice
 			Class.prototype.Class = Class.prototype.constructor = Class;
 
 
-			var args = Class.setup.apply(Class, [_super_class, klass, proto]);
+			var args = Class.setup(_super_class, name, klass, proto) || [];
 
 			if ( Class.init ) {
-				Class.init.apply(Class, args || []);
+				Class.init(...args);
 			}
 
 			/* @Prototype*/

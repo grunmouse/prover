@@ -15,7 +15,7 @@ const ConvertBaseArb = ArbitraryBase.extend(
 				arb = arb();
 			}
 			this._arb = arb;
-			if(arb.count){
+			if(arb.size){
 				this._super(arb.limit);
 			}
 			else{
