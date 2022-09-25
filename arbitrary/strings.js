@@ -18,5 +18,6 @@ const ident = function(size){
 };
 
 module.exports = {
+	string,
 	ident
 };

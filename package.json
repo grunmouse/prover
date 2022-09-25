@@ -10,7 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "@grunmouse/big-random": "link:..\\big-random",
-    "@grunmouse/binary": "link:..\\binary"
+    "@grunmouse/binary": "link:..\\binary",
+    "@grunmouse/multioperator-set-theory": "link:..\\multioperator-set-theory"
   },
   "devDependencies": {
     "mocha": "^10.0.0",

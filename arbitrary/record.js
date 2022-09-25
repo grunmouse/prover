@@ -10,7 +10,7 @@ const RecordArb = ArbitraryBase.extend(
 		
 		_generate: function(){
 			let fields = this._fields.map(([key, arb])=>([key, arb.generate()]));
-			
+		
 			return Object.fromEntries(fields);
 		}
 	}
