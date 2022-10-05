@@ -2,14 +2,10 @@
 	var initializing = false,
         //point = '.',
 		noop = function(){},
-		makeArray = (arr)=>Array.from(arr),
 		isFunction = (fun)=>(fun && fun.call),
 		isArray = Array.isArray,
 		extend = function(target, ...sources){
 			Object.assign(target, ...sources);
-		},
-		concatArgs = function(arr, args){
-			return arr.concat(makeArray(args));
 		},
         toStringStr = 'toString',
         valueOfStr = 'valueOf',
@@ -51,49 +47,51 @@
 		// tests if we can get super in .toString()
 		fnTest = /xyz/.test(function() {
 			return 'xyz'; //Old one was fucked up by GCC
-		}) ? /\b_super\b/ : /.*/,
-		// overwrites an object with methods, sets up _super
-		// newProps - new properties
-		// oldProps - where the old properties might be
-		// addTo - what we are adding to
-		inheritProps = function( newProps, oldProps, addTo ) {
-            var wrapSuper = function( name, fn ) {
-                return function() {
-                    var tmp = this._super,
-                            ret;
-
-                    // Add a new ._super() method that is the same method
-                    // but on the super-class
-                    this._super = oldProps[name];
-
-                    // The method only need to be bound temporarily, so we
-                    // remove it when we're done executing
-                    ret = fn.apply(this, arguments);
-                    this._super = tmp;
-                    return ret;
-                };
-            }, name;
-			addTo = addTo || newProps
-			for (name in newProps ) {
-				// Check if we're overwriting an existing function
-				addTo[name] = isFunction(newProps[name]) && 
-							  isFunction(oldProps[name]) && 
-							  fnTest.test(newProps[name]) ? wrapSuper(name, newProps[name]) : newProps[name];
-			}
-
-            //Take care of toString method
-            if(newProps && !supportToString && newProps.hasOwnProperty(toStringStr)){
-                addTo[toStringStr] = fnTest.test(newProps[toStringStr]) ? wrapSuper(toStringStr, newProps[toStringStr]) : newProps[toStringStr];
-            }
-
-            //Take care of valueOf method
-            if(newProps && !supportValueOf && newProps.hasOwnProperty(valueOfStr)){
-                addTo[valueOfStr] = fnTest.test(newProps[valueOfStr]) ? wrapSuper(valueOfStr, newProps[valueOfStr]) : newProps[valueOfStr];
-            }
-		},
+		}) ? /\b_super\b/ : /.*/;
 
 
-	clss = function() {
+	// overwrites an object with methods, sets up _super
+	// newProps - new properties
+	// oldProps - where the old properties might be
+	// addTo - what we are adding to
+	var inheritProps = function( newProps, oldProps, addTo ) {
+		var wrapSuper = function( name, fn ) {
+			return function() {
+				var tmp = this._super,
+						ret;
+
+				// Add a new ._super() method that is the same method
+				// but on the super-class
+				this._super = oldProps[name];
+
+				// The method only need to be bound temporarily, so we
+				// remove it when we're done executing
+				ret = fn.apply(this, arguments);
+				this._super = tmp;
+				return ret;
+			};
+		}, name;
+		addTo = addTo || newProps
+		for (name in newProps ) {
+			// Check if we're overwriting an existing function
+			addTo[name] = isFunction(newProps[name]) && 
+						  isFunction(oldProps[name]) && 
+						  fnTest.test(newProps[name]) ? wrapSuper(name, newProps[name]) : newProps[name];
+		}
+
+		//Take care of toString method
+		if(newProps && !supportToString && newProps.hasOwnProperty(toStringStr)){
+			addTo[toStringStr] = fnTest.test(newProps[toStringStr]) ? wrapSuper(toStringStr, newProps[toStringStr]) : newProps[toStringStr];
+		}
+
+		//Take care of valueOf method
+		if(newProps && !supportValueOf && newProps.hasOwnProperty(valueOfStr)){
+			addTo[valueOfStr] = fnTest.test(newProps[valueOfStr]) ? wrapSuper(valueOfStr, newProps[valueOfStr]) : newProps[valueOfStr];
+		}
+	};
+
+
+	var clss = function() {
 		if (arguments.length) {
 			clss.extend.apply(clss, arguments);
 		}
@@ -104,7 +102,7 @@
 		proxy: function( funcs ) {
 
 			//args that should be curried
-			var args = makeArray(arguments),
+			var args = Array.from(arguments),
 				self;
 
 			funcs = args.shift();
@@ -121,8 +119,8 @@
 				}
 			}
 			//!steal-remove-end
-			return function class_cb() {
-				var cur = concatArgs(args, arguments),
+			return function class_cb(...a) {
+				var cur = args.concat(a),
 					isString, 
 					length = funcs.length,
 					f = 0,
@@ -185,9 +183,9 @@
 			// figure out what was passed
 			if (!proto ) {
 				proto = klass;
-				klass = name;
+				klass = undefined;
 			}
-
+			console.log(name, klass, proto);
 			proto = proto || {};
 			var _super_class = this,
 				_super = this.prototype,
@@ -214,7 +212,7 @@
 					return this.Class.newInstance(...args)
 				}
 			}
-			Class.name = name;
+			Object.defineProperty(Class, 'name', {value:name});
 			
 			
 			Object.setPrototypeOf(Class, this);
