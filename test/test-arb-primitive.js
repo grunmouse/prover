@@ -3,7 +3,7 @@ const {property:prop} = require('../check.js');
 const arb = require('../arbitrary/primitive.js');
 const sinon = require('sinon');
 
-describe('arbitrary', ()=>{
+describe('primitives', ()=>{
 	describe('bool', ()=>{
 		prop('generate', arb.bool, (a)=>{
 			assert.ok(typeof a === 'boolean');

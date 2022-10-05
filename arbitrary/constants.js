@@ -4,6 +4,7 @@ const convert = require('../convert/index.js');
 const ArbitraryBase = require('./arbitrary-base.js');
 
 const ConstArb = ArbitraryBase.extend(
+	'ConstArbitrary',
 	{
 		init:function(value){
 			this._value = value;

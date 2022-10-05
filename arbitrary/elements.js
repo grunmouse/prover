@@ -5,6 +5,7 @@ const ArbitraryBase = require('./arbitrary-base.js');
  */
 
 const ElementArb = ArbitraryBase.extend(
+	'ElementsArbitrary',
 	{
 		init:function(arr){
 			this._elements = arr;

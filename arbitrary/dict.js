@@ -4,6 +4,7 @@ const uarray = require('./unique-array.js');
 
 
 const DictArb = ArbitraryBase.extend(
+	'DictArbitrary',
 	{
 		init:function(size, keys, type){
 			this._size = size;

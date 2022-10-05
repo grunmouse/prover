@@ -9,10 +9,13 @@ const ArbitraryBase = require('./arbitrary-base.js');
 
 
 const BigIntegerArb = ArbitraryBase.extend(
+	'BigIntArbitrary',
 	{
 		setup:convert.ensureIntegerArgs,
 		
 		init:function(min, max){
+			this.min = min;
+			this.max = max;
 			this._super(max - min);
 			
 			this._convert = convert.offsetBigInt(min);

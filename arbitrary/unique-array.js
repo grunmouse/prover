@@ -30,6 +30,7 @@ const UArrayArb = ArbitraryBase.extend(
 				size = size.generate();
 			}
 			let raw = uniqueRandom(BigInt(size), type.pregen);
+			
 			return raw.map(type.proxy('convert'));
 		}
 	}

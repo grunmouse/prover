@@ -26,7 +26,13 @@ const ArbitraryBase = Class.extend(
 	{
 		init:function(limit){
 			if(limit != null){
+				try{
 				limit = BigInt(limit);
+				}
+				catch(e){
+					console.log(limit);
+					throw e;
+				}
 				this.limit = limit;
 				this.size = limit+1n;
 				this.pregen = this.Class.pregen(limit);

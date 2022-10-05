@@ -1,6 +1,7 @@
 const ArbitraryBase = require('./arbitrary-base.js');
 
 const BooleanArb = ArbitraryBase.extend(
+	'BooleanArbitrary',
 	{
 		init:function(){
 			this._super(1);

@@ -6,60 +6,49 @@ const ArbitraryBase = require('./arbitrary-base.js');
 const {integer} = require('./privitive.js');
 const union = require('./union.js');
 
-const NodeArb = ArbitraryBase.extend(
-	{
-		init:function(deep, tail, makeNode){
-			this._deep = deep;
-			this._tail = tail;
-			this._makeNode = makeNode;
-			
-			this._super();
-		},
-		
-		_generate:function(){
-			const deep = this._deep;
-			const tail = this._tail, makeNode = this._makeNode;
-
-			if(deep == 0){
-				return tail.generate();
-			}
-			else{
-				let arb = new RecursiveArb(deep-1, tail, makeNode);
-				let item = union([tail, arb]);
-				
-				return makeNode(arb).generate();
-			}
-
-		}
+function nodeArb(deep, tail, nodeFactory){
+	if(deep === 0){
+		return tail;
 	}
-);
+	else{
+		let arb = nodeArb(deep-1, tail, nodeFactory);
+		return nodeFactory(arb);
+	}
+}
+
+function tileNodeArb(deep, tail, nodeFactory){
+	if(deep === 0){
+		return tail;
+	}
+	else{
+		let arb = nodeArb(deep-1, tail, nodeFactory);
+		return nodeFactory(union([arb, tail]));
+	}
+}
 
 const RecursiveArb = ArbitraryBase.extend(
 	{
-		init:function(deep, tail, makeNode){
+		newInstance(deep, tail, nodeFactory){
 			if(deep.call){
 				deep = deep();
 			}
-			if(tail.call){
-				tail = tail();
+			if(typeof deep === 'bigint'){
+				deep = Number(deep);
 			}
-			this._deep = deep;
-			this._tail = tail;
-			this._makeNode = makeNode;
-			
-			this._super();
-		},
-		
-		_generate:function(){
-			const deep = this._deep.generate ? this._deep.generate : this._deep;
-			const tail = this._tail, makeNode = this._makeNode;
-
-			let arb = new RecursiveArb(deep-1, tail, makeNode);
-			let arb = new RecursiveArb(deep-1, tail, makeNode);
-			let item = union([tail, arb]);
-			
-			return makeNode(arb).generate();
-
+			if(typeof deep === 'number'){
+				return nodeArb(deep, tail, nodeFactory);
+			}
+			if(range.length){
+				let {min, max} = deep;
+				if(min === 0n){
+					return tileNodeArb(max, tail, nodeFactory);
+				}
+				else if(min === max){
+					return new SizedArrayArb(max, type);
+				}
+				range = {min, max}; 
+			}
+			return this._super(range, type);
 		}
 	}
 );

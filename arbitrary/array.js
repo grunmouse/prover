@@ -112,7 +112,7 @@ const ArrayArb = ArbitraryBase.extend(
 			if(typeof range === 'number'){
 				return new SizedArrayArb(range, type);
 			}
-			if(range.length){
+			if(range.size){
 				let {min, max} = range;
 				if(min === 0n){
 					return new LimitedArrayArb(max, type);
