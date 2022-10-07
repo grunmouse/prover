@@ -49,6 +49,26 @@
 			return 'xyz'; //Old one was fucked up by GCC
 		}) ? /\b_super\b/ : /.*/;
 
+	
+	function ownKeys(newProps){
+		if(!newProps){
+			return [];
+		}
+		
+		let keys = Object.keys(newProps);
+		
+		//Take care of toString method
+		if(!keys.includes(toStringStr) && newProps.hasOwnProperty(toStringStr)){
+			keys.push(toStringStr);
+		}
+
+		//Take care of valueOf method
+		if(!keys.includes(valueOfStr) && newProps.hasOwnProperty(valueOfStr)){
+			keys.push(valueOfStr);
+		}
+		
+		return keys
+	}
 
 	// overwrites an object with methods, sets up _super
 	// newProps - new properties
