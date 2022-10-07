@@ -90,24 +90,16 @@
 				this._super = tmp;
 				return ret;
 			};
-		}, name;
-		addTo = addTo || newProps
-		for (name in newProps ) {
+		};
+		
+		
+		for (let name of ownKeys(newProps) ) {
 			// Check if we're overwriting an existing function
 			addTo[name] = isFunction(newProps[name]) && 
 						  isFunction(oldProps[name]) && 
 						  fnTest.test(newProps[name]) ? wrapSuper(name, newProps[name]) : newProps[name];
 		}
 
-		//Take care of toString method
-		if(newProps && !supportToString && newProps.hasOwnProperty(toStringStr)){
-			addTo[toStringStr] = fnTest.test(newProps[toStringStr]) ? wrapSuper(toStringStr, newProps[toStringStr]) : newProps[toStringStr];
-		}
-
-		//Take care of valueOf method
-		if(newProps && !supportValueOf && newProps.hasOwnProperty(valueOfStr)){
-			addTo[valueOfStr] = fnTest.test(newProps[valueOfStr]) ? wrapSuper(valueOfStr, newProps[valueOfStr]) : newProps[valueOfStr];
-		}
 	};
 
 
@@ -237,23 +229,9 @@
 			
 			Object.setPrototypeOf(Class, this);
 			
-			// Copy old stuff onto class
-			/*for ( name in this ) {
-				if ( this.hasOwnProperty(name) ) {
-					Class[name] = this[name];
-				}
-			}*/
-            //Take care of special props
-            //copyNonEnumerableProps(Class, this);
-
 			// copy new props on class
 			inheritProps(klass, this, Class);
 
-			// set things that can't be overwritten
-			/*extend(Class, {
-				prototype: _prototype,
-				constructor: Class
-			});*/
 			Class.prototype = _prototype;
 
 			//make sure our prototype looks nice
