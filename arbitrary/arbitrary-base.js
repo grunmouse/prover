@@ -1,12 +1,11 @@
 const Class = require('./class.js');
 
-const random = require('@grunmouse/big-random');
-
-const pregen = (randomLim)=>(b)=>(a=0n)=>(randomLim(b-a)+a);
+const pregen = (maxLimit)=>(randomLim)=>(minLimit=0n)=>(randomLim(maxLimit-minLimit)+minLimit);
 
 const ArbitraryBase = Class.extend(
 	{
-		pregen:(b)=>(a=0n)=>(random.randomBigUintLim(b-a)+a),
+
+		pregen:pregen,
 		
 		extend:function(klass, proto){
 			if(!proto){
@@ -39,13 +38,13 @@ const ArbitraryBase = Class.extend(
 			}
 		},
 		
-		_generate:function(){
-			let raw = this.pregen();
+		_generate:function(randomBigUintLim){
+			let raw = this.pregen(randomBigUintLim)();
 			return this._convert(raw);
 		},
 		
-		generate:function(){
-			return this._finalConvert(this._generate());
+		generate:function(randomBigUintLim){
+			return this._finalConvert(this._generate(randomBigUintLim));
 		},
 		
 		convert:function(value){

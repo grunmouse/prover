@@ -27,12 +27,12 @@ const TupleArb = ArbitraryBase.extend(
 			return arr;
 		},
 		
-		_generate: function(){
+		_generate: function(randomBigUintLim){
 			if(this.pregen){
-				return this._super();
+				return this._super(randomBigUintLim);
 			}
 			else{
-				return this._fields.map((arb)=>(arb.generate()));
+				return this._fields.map((arb)=>(arb.generate(randomBigUintLim)));
 			}
 		}
 	}

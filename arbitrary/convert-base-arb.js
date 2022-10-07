@@ -27,8 +27,8 @@ const ConvertBaseArb = ArbitraryBase.extend(
 			return this._arb.convert(value);
 		},
 		
-		_generate: function(){
-			return this._arb.generate();
+		_generate: function(randomBigUintLim){
+			return this._arb.generate(randomBigUintLim);
 		}
 	}
 );

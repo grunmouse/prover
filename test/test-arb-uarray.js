@@ -1,6 +1,6 @@
 const assert = require("assert").strict;
 const sinon = require('sinon');
-const {property:prop} = require('../check.js');
+const {property:prop, random} = require('../check.js');
 const arb = {
 	...require('../arbitrary/primitive.js'),
 	...require('../arbitrary/array.js')
@@ -12,7 +12,7 @@ describe('uarray', ()=>{
 	describe('with const size', ()=>{
 		prop('generate', arb.posit(100), (size)=>{
 			const a = uarray(size, arb.uint8);
-			let val = a.generate();
+			let val = a.generate(random.randomBigUintLim);
 			
 			assert.equal(val.length, size, 'size');
 			let s = new Set(val);
@@ -28,7 +28,7 @@ describe('uarray', ()=>{
 			}
 			const a = uarray(arb.integer(min, max), arb.uint8);
 			
-			let val = a.generate();
+			let val = a.generate(random.randomBigUintLim);
 			
 			assert.ok(val.length >=min && val.length <=max, 'size');
 			let s = new Set(val);

@@ -24,13 +24,18 @@ function check(arbitrary, property){
 	
 	for(let i=0; i<count; ++i){
 		rndState = random.currentStateString();
-		firstValue = arbitrary.generate();
+		firstValue = arbitrary.generate(random.randomBigUintLim);
 		try{
+			let result;
 			if(arbitrary instanceof InnerTuple){
-				property(...firstValue);
+				result = property(...firstValue);
 			}
 			else{
-				property(firstValue);
+				result = property(firstValue);
+			}
+			
+			if(result && result.err){
+				return result;
 			}
 		}
 		catch(e){
@@ -128,5 +133,6 @@ function property(name, ...args){
 
 module.exports = {
 	check,
-	property
+	property,
+	random
 };

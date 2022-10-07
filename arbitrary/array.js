@@ -36,13 +36,7 @@ const SizedArrayArb = ArbitraryBase.extend(
 			let arr = convert.decomp(value, type.size);//.map(type.proxy('convert'));
 			arr = Array.from({length:Number(size)}, (_, i)=>(type.convert(arr[i]||0)));
 			return arr;
-		}/*,
-		
-		_generate: function(){
-			const size = this._size, type = this._type;
-			let arr = Array.from({length:Number(size)}, type.proxy('generate'));
-			return arr;
-		}*/
+		}
 	}
 );
 

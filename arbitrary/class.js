@@ -185,7 +185,7 @@
 				proto = klass;
 				klass = undefined;
 			}
-			console.log(name, klass, proto);
+
 			proto = proto || {};
 			var _super_class = this,
 				_super = this.prototype,

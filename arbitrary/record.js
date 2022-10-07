@@ -8,8 +8,8 @@ const RecordArb = ArbitraryBase.extend(
 		},
 
 		
-		_generate: function(){
-			let fields = this._fields.map(([key, arb])=>([key, arb.generate()]));
+		_generate: function(randomBigUintLim){
+			let fields = this._fields.map(([key, arb])=>([key, arb.generate(randomBigUintLim)]));
 		
 			return Object.fromEntries(fields);
 		}

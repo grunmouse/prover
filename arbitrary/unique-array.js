@@ -24,12 +24,12 @@ const UArrayArb = ArbitraryBase.extend(
 			this._super();
 		},
 
-		_generate: function(){
+		_generate: function(randomBigUintLim){
 			let size = this._size, type = this._type;
 			if(size.generate){
-				size = size.generate();
+				size = size.generate(randomBigUintLim);
 			}
-			let raw = uniqueRandom(BigInt(size), type.pregen);
+			let raw = uniqueRandom(BigInt(size), type.pregen(randomBigUintLim));
 			
 			return raw.map(type.proxy('convert'));
 		}

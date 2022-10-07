@@ -17,10 +17,10 @@ const LetArbitrary = ArbitraryBase.extend(
 			this.factory = factory;
 		},
 		
-		_generate(){
-			let vals = vars.generate();
+		_generate(randomBigUintLim){
+			let vals = vars.generate(randomBigUintLim);
 			let arb = this.factory(...vals);
-			return arb.generate();
+			return arb.generate(randomBigUintLim);
 		}
 	}
 );

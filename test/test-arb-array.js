@@ -1,6 +1,6 @@
 const assert = require("assert").strict;
 const sinon = require('sinon');
-const {property:prop} = require('../check.js');
+const {property:prop, check, random} = require('../check.js');
 const arb = {
 	...require('../arbitrary/primitive.js'),
 	...require('../arbitrary/array.js')
@@ -10,7 +10,7 @@ describe('arbitrary', ()=>{
 	describe('sized array', ()=>{
 		prop('generate', arb.posit(100), (size)=>{
 			let a = arb.sarray(size, arb.uint8);
-			let val = a.generate();
+			let val = a.generate(random.randomBigUintLim);
 			
 			assert.equal(val.length, size);
 			assert.ok(val.every((item)=>(item>=0 && item<256)));
@@ -32,7 +32,8 @@ describe('arbitrary', ()=>{
 	describe('limited array', ()=>{
 		prop('generate', arb.posit(100), (size)=>{
 			let a = arb.larray(size, arb.uint8);
-			let val = a.generate();
+
+			let val = a.generate(random.randomBigUintLim);
 			
 			assert.ok(val.length <= size);
 			assert.ok(val.every((item)=>(item>=0 && item<256)));
@@ -57,7 +58,7 @@ describe('arbitrary', ()=>{
 				[min, max] = [max, min];
 			}
 			let a = arb.array(arb.integer(min, max), arb.uint8);
-			let val = a.generate();
+			let val = a.generate(random.randomBigUintLim);
 			
 			assert.ok(val.length <= max && val.length >= min);
 			assert.ok(val.every((item)=>(item>=0 && item<256)));

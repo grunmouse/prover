@@ -14,10 +14,10 @@ const DictArb = ArbitraryBase.extend(
 		},
 
 		
-		_generate: function(){
-			let keys = uarray(this._size, this._keys).generate()
+		_generate: function(randomBigUintLim){
+			let keys = uarray(this._size, this._keys).generate(randomBigUintLim)
 			
-			let fields = keys.map((key)=>([key, this._type.generate()]));
+			let fields = keys.map((key)=>([key, this._type.generate(randomBigUintLim)]));
 			
 			return Object.fromEntries(fields);
 		}
