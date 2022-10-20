@@ -1,49 +1,13 @@
 	// if we are initializing a new class
 	var initializing = false,
         //point = '.',
-		noop = function(){},
+		//noop = function(){},
 		isFunction = (fun)=>(fun && fun.call),
 		isArray = Array.isArray,
-		extend = function(target, ...sources){
-			Object.assign(target, ...sources);
-		},
+		extend = Object.assign,
         toStringStr = 'toString',
         valueOfStr = 'valueOf',
-        //check if toString is enumerable
-        supportToString = (function(){
-            var obj = {
-                toString: noop
-            }, name;
-            for(name in obj) {
-                if(obj.hasOwnProperty(name) && name === toStringStr) {
-                    return true;
-                }
-            }
-            return false;
-        }()),
-        //check if valueOf is enumerable
-        supportValueOf = (function(){
-            var obj = {
-                valueOf: noop
-            }, name;
-            for(name in obj) {
-                if(obj.hasOwnProperty(name) && name === valueOfStr) {
-                    return true;
-                }
-            }
-            return false;
-        }()),
-        //Copy nonenumerable methods.
-        copyNonEnumerableProps = supportToString && supportValueOf ? noop :
-            function(to, from) {
-                if(!supportToString && from.hasOwnProperty(toStringStr)) {
-                    to[toStringStr] = from[toStringStr];
-                }
 
-                if(!supportValueOf && from.hasOwnProperty(valueOfStr)) {
-                    to[valueOfStr] = from[valueOfStr];
-                }
-            },
 		// tests if we can get super in .toString()
 		fnTest = /xyz/.test(function() {
 			return 'xyz'; //Old one was fucked up by GCC
@@ -67,7 +31,7 @@
 			keys.push(valueOfStr);
 		}
 		
-		return keys
+		return keys;
 	}
 
 	// overwrites an object with methods, sets up _super
@@ -103,7 +67,7 @@
 	};
 
 
-	var clss = function() {
+	var clss = function AnonimousClass() {
 		if (arguments.length) {
 			clss.extend.apply(clss, arguments);
 		}
@@ -182,6 +146,7 @@
 		rawInstance: function() {
 			initializing = true;
 			var inst = new this();
+			Object.defineProperty(inst, '_super', {writable:true});
 			initializing = false;
 			return inst;
 		},
@@ -190,7 +155,7 @@
 			if(typeof name !== 'string'){
 				proto = klass;
 				klass = name;
-				name = 'AnonimousClass';
+				name = this.name || 'AnonimousClass';
 			}
 			// figure out what was passed
 			if (!proto ) {

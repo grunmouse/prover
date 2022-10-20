@@ -23,6 +23,9 @@ const ArbitraryBase = Class.extend(
 		}
 	}, 
 	{
+		/**
+		 * Принимает предельное значение сырого случайного числа, создаёт прегенератор
+		 */
 		init:function(limit){
 			if(limit != null){
 				try{
