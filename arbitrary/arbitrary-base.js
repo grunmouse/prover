@@ -29,7 +29,7 @@ const ArbitraryBase = Class.extend(
 		init:function(limit){
 			if(limit != null){
 				try{
-				limit = BigInt(limit);
+					limit = BigInt(limit);
 				}
 				catch(e){
 					console.log(limit);
@@ -53,6 +53,17 @@ const ArbitraryBase = Class.extend(
 		convert:function(value){
 			let raw = value.call ? value(this.limit) : value;
 			return this._finalConvert(this._convert(raw));
+		},
+		
+		all:function*(){
+			if(this.limit == null){
+				return;
+			}
+			
+			for(let i=0n; i<this.size; i++){
+				let c = this.convert(i);
+				yield c;
+			}
 		},
 		
 		shrink:function(){

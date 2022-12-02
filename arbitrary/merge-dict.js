@@ -17,4 +17,4 @@ const MergeDict = ConvertBase.extend(
 	}
 );
 
-module.exports = StringArb;
+module.exports = MergeDict;
