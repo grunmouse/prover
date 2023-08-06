@@ -16,7 +16,7 @@ describe('show error', ()=>{
 		
 		console.log([test.file, test.fullTitle(), res.rndState, res.value, res.err]);
 		
-		throw res.err;
+		//throw res.err;
 		
 		//console.log(this);
 	});
@@ -26,6 +26,16 @@ describe('show error', ()=>{
 	});
 	
 	it('err', ()=>{
-		assert.equal(1,2);
+		//assert.equal(1,2);
+	});
+	
+	it('obj', ()=>{
+		let err = new assert.AssertionError({
+			actual: [1,2,3,6,7,8],
+			expected: [1,2,3,4,5,6,7,8],
+			operator: 'deepStrictEqual',
+		});
+		console.log(err.message);
+		//throw err;
 	});
 });

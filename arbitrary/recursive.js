@@ -38,7 +38,7 @@ const RecursiveArb = ArbitraryBase.extend(
 			if(typeof deep === 'number'){
 				return nodeArb(deep, tail, nodeFactory);
 			}
-			if(range.length){
+			if(deep.length){
 				let {min, max} = deep;
 				if(min === 0n){
 					return tileNodeArb(max, tail, nodeFactory);
