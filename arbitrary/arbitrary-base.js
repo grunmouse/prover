@@ -1,5 +1,11 @@
 const Class = require('./class.js');
 
+/**
+ * Функция генерации случайного целого, последовательно каррирующая аргументы слева.
+ * @param maxLimit : BigInt - верхний предел генерируемого значения (включая)
+ * @param randomLim : Function(BigInt) => BigInt - функция генерации случайного числа от нуля до аргумента (включая)
+ * @param minLimit : BigInt=0n - нижний предел генерируемого значения
+ */
 const pregen = (maxLimit)=>(randomLim)=>(minLimit=0n)=>(randomLim(maxLimit-minLimit)+minLimit);
 
 const ArbitraryBase = Class.extend(
