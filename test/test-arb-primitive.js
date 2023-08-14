@@ -22,11 +22,41 @@ describe('primitives', ()=>{
 			assert.ok(a <= 5);
 			assert.ok(a >= -3);
 		});
+		prop('without call', arb.integer, (a)=>{
+			assert.ok(typeof a === 'number');
+			assert.ok(Number.isInteger(a));
+		});
 		it('convert', function(){
 			const a = arb.integer(-3, 5);
 			
 			assert.equal(a.convert(0), -3);
 			assert.equal(a.convert(a.limit), 5);
+		});
+	});
+
+	describe('nat', ()=>{
+		prop('generate', arb.nat(5), (a)=>{
+			assert.ok(typeof a === 'number');
+			assert.ok(Number.isInteger(a));
+			assert.ok(a <= 5);
+			assert.ok(a >= 0);
+		});
+		prop('without call', arb.nat, (a)=>{
+			assert.ok(typeof a === 'number');
+			assert.ok(Number.isInteger(a));
+		});
+	});
+
+	describe('posit', ()=>{
+		prop('generate', arb.posit(5), (a)=>{
+			assert.ok(typeof a === 'number');
+			assert.ok(Number.isInteger(a));
+			assert.ok(a <= 5);
+			assert.ok(a > 0);
+		});
+		prop('without call', arb.posit, (a)=>{
+			assert.ok(typeof a === 'number');
+			assert.ok(Number.isInteger(a));
 		});
 	});
 	

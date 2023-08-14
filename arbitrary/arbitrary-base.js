@@ -1,6 +1,6 @@
 const Class = require('./class.js');
 
-/**
+/*
  * Функция генерации случайного целого, последовательно каррирующая аргументы слева.
  * @param maxLimit : BigInt - верхний предел генерируемого значения (включая)
  * @param randomLim : Function(BigInt) => BigInt - функция генерации случайного числа от нуля до аргумента (включая)
@@ -8,24 +8,64 @@ const Class = require('./class.js');
  */
 const pregen = (maxLimit)=>(randomLim)=>(minLimit=0n)=>(randomLim(maxLimit-minLimit)+minLimit);
 
+/*
+ * @interface IArbitrary<T>
+ * @typeparam T - тип генерируемых случайных значений
+ *
+ * @property limit : BigInt - наибольший индекс возвращаемого значения
+ *
+ * @property size : BigInt - размер генерируемых случайных данных
+ * size = limit + 1n
+ *
+ * @method generate(randomBigUintLim) - генератор случайного значения
+ * @param randomBigUintLim : Function(BigUInt=>UBigInt) - генератор случайных значений не больше аргумента
+ * @return T
+ *
+ * @method convert(index) - преобразует переданное число в значение заданного типа
+ * @param index : BigInt & [0..limit]
+ * @return T
+ *
+ * @method shrink(value) ??? - генерирует для заданного значения множество соседних значений, в направлении поиска ошибки
+ * @param value : T
+ * @return null | Iterable<T> - множество соседних значений
+ *
+ * @method all() - генерирует все значения типа T
+ * @yields T 
+ 
+ * @method stringify(value) - преобразует значение в строку
+ * @param value : T
+ * @return String
+ *
+ */
+
 const ArbitraryBase = Class.extend(
 	{
 
-		pregen:pregen,
+		makePregen:pregen,
 		
-		extend:function(klass, proto){
-			if(!proto){
-				proto = klass;
-				klass = undefined;
-			}
+		_extend:function(name, klass, proto){
+
 			if(proto.limit){
 				let lim = BigInt(proto.limit);
 				proto.limit = limit;
 				proto.size = limit+1n;
-				proto.pregen = this.pregen(limit);
+				proto.pregen = this.makePregen(limit);
 			}
 			
-			return this._super(klass, proto);
+			let cls = this._super(name, klass, proto);
+			
+			if(!cls.notDefault){
+				let dflt = new cls();
+				['generate', 'convert', 'shrink', 'all', 'stringify'].forEach((key)=>{
+					cls[key] = dflt.proxy(key);
+				});
+				['limit', 'size'].forEach((key)=>{
+					cls[key] = dflt[key];
+				});
+			}
+			
+			
+			return cls;
 		}
 	}, 
 	{
@@ -43,7 +83,7 @@ const ArbitraryBase = Class.extend(
 				}
 				this.limit = limit;
 				this.size = limit+1n;
-				this.pregen = this.Class.pregen(limit);
+				this.pregen = this.Class.makePregen(limit);
 			}
 		},
 		

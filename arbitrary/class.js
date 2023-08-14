@@ -162,7 +162,11 @@
 				proto = klass;
 				klass = undefined;
 			}
-
+			
+			return this._extend(name, klass, proto);
+		},
+		
+		_extend: function(name, klass, proto){
 			proto = proto || {};
 			var _super_class = this,
 				_super = this.prototype,

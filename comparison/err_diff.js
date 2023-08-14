@@ -17,6 +17,10 @@ const
 
 const { inspect } = require('util');
 
+const { inspect:myInspect } = require('./inspect');
+
+
+
 const removeColors = require('./inspect/internal/util2.js');
 const colors = Object.fromEntries(
 	Object.entries(inspect.colors).map(
@@ -57,12 +61,7 @@ function copyError(source) {
   return target;
 }
 
-function inspectValue(val) {
-  // The util.inspect default values could be changed. This makes sure the
-  // error messages contain the necessary information nevertheless.
-  return inspect(
-    val,
-    {
+const inspectConfig =  {
       compact: false,
       customInspect: false,
       depth: 1000,
@@ -74,18 +73,40 @@ function inspectValue(val) {
       sorted: true,
       // Inspect getters as we also check them when comparing entries.
       getters: true,
-    },
+    };
+
+function inspectValue(val) {
+  // The util.inspect default values could be changed. This makes sure the
+  // error messages contain the necessary information nevertheless.
+  return inspect(
+    val,
+    inspectConfig
   );
 }
 
 function createErrDiff(actual, expected, operator) {
+	const actualInspected = inspectValue(actual);
+	const expectedInspected = inspectValue(expected);
+	
+	return inspectLinesDiff(actual, expected, actualInspected, expectedInspected, operator);
+}
+
+function compareInspectors(actual, original, sample, config){
+	config = config || inspectConfig;
+	const actualInspected = actual(sample, config);
+	const expectedInspected = original(sample, config);
+
+	return inspectLinesDiff(sample, sample, actualInspected, expectedInspected, 'compareInspectors');
+}
+
+function inspectLinesDiff(actual, expected, actualInspected, expectedInspected, operator) {
   let other = '';
   let res = '';
   let end = '';
   let skipped = false;
-  const actualInspected = inspectValue(actual);
+
   const actualLines = StringPrototypeSplit(actualInspected, '\n');
-  const expectedLines = StringPrototypeSplit(inspectValue(expected), '\n');
+  const expectedLines = StringPrototypeSplit(expectedInspected, '\n');
 
   let i = 0;
   let indicator = '';
@@ -325,9 +346,13 @@ function addEllipsis(string) {
 }
 
 
-console.log(createErrDiff([1,2,3, {a:1, b:2}], [2,3,4, {a:1, b:3}]));
-console.log(createErrDiff({a:1, b:2}, {a:2, c:3}));
-console.log(createErrDiff(3, 4));
+//console.log(createErrDiff([1,2,3, {a:1, b:2}], [2,3,4, {a:1, b:3}]));
+//console.log(createErrDiff({a:1, b:2}, {a:2, c:3}));
+//console.log(createErrDiff(3, 4));
 
+//console.log(compareInspectors(myInspect, inspect, [1,2,3, {a:1, b:2}], [2,3,4, {a:1, b:3}]));
 
-module.exports = createErrDiff;
+module.exports = {
+	createErrDiff,
+	compareInspectors
+}
