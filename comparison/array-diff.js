@@ -247,18 +247,6 @@ function arrayDiff(a, b, itemCompare){
 	
 }
 
-function groupArrayKeys(arr, tupleLength){
-	tupleLength = tupleLength || 0;
-	
-	const isIndex = (key)=>{
-		if(isNaN(key)) return false;
-		key = +key;
-		return Number.isInteger(key) && key>=0 && key < array.length;
-	};
-	
-	let keys = Object.keys(arr);
-}
-
 module.exports = {
 	arrayDiff,
 	sortedArrayDiff,

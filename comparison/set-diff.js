@@ -1,9 +1,13 @@
 
+/**
+ * @param a : Iterable
+ * @param b : Iterable
+ */
 function setDiff(a, b){
-	let common = new Set(), added = new Set, deleted = new Set(b);
+	let common = new Set(), added = new Set(), deleted = new Set(b);
 	
 	for(let key of a){
-		if(b.has(key)){
+		if(deleted.has(key)){
 			common.add(key);
 			deleted.delete(key);
 		}
