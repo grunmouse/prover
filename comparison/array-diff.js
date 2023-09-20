@@ -247,8 +247,63 @@ function arrayDiff(a, b, itemCompare){
 	
 }
 
+function arrayParallelDiff(a, b, itemCompare){
+	let len = Math.min(a.length, b.length);
+	
+	let result = [], status = a.length === b.length;
+	
+	let current;
+	for(let i=0; i<len; ++i){
+		let cmp = itemCompare(a[i], b[i]);
+		if(!current || (current.status==='common') !== (!!+cmp)){
+			current = {status: +cmp ? 'common' : 'difference', value : []};
+			result.push(current);
+		}
+		current.value.push(cmp);
+	}
+	
+	if(a.length > len){
+		result.push({status:'added', value: a.slice(len)});
+	}
+	else if(b.length > len){
+		result.push({status:'deleted', value: b.slice(len)});
+	}	
+	
+	return result;
+}
+
+function isIndex(over, min=0){
+	return (key)=>{
+		key = +key;
+		return !isNaN(key) && key<over && key>=min;
+	};
+}
+
+function notIsIndex(over, min=0){
+	return (key)=>{
+		key = +key;
+		return isNaN(key) || key>=over || key<min;
+	};
+}
+
+function arrayStatus(diff){
+	return diff.length === 1 && diff[0].status === 'common';
+}
+
+function sortedDiffMethod(itemSorter){
+	return function(a, b, itemCompare){
+		return sortedArrayDiff(a, b, itemCompare, itemSorter);
+	}
+}
+
 module.exports = {
 	arrayDiff,
 	sortedArrayDiff,
-	smallArrayDiff
+	arrayParallelDiff,
+	sortedDiffMethod, 
+	smallArrayDiff,
+	
+	isIndex,
+	notIsIndex,
+	arrayStatus
 };

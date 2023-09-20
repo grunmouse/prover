@@ -107,6 +107,39 @@ function textDiff(a, b){
 	return diff;
 }
 
+function stringParallelDiff(a, b, itemCompare){
+	a = [...a];
+	b = [...b];
+	let len = Math.min(a.length, b.length);
+	
+	let result = [], status = a.length === b.length;
+	
+	let current;
+	for(let i=0; i<len; ++i){
+		let cmp = a[i] === b[i];
+		if(!current || (current.status==='common') !== (!!+cmp)){
+			current = {status: +cmp ? 'common' : 'difference', value : []};
+			result.push(current);
+		}
+		current.value.push(cmp);
+	}
+	
+	if(a.length > len){
+		result.push({status:'added', value: a.slice(len)});
+	}
+	else if(b.length > len){
+		result.push({status:'deleted', value: b.slice(len)});
+	}	
+	
+	result.forEach((item)=>{
+		item.value = item.value.join('');
+	});
+	
+	return result;
+}
+
+
 module.exports = {
-	textDiff
+	textDiff,
+	stringParallelDiff
 };

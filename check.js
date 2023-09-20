@@ -1,5 +1,4 @@
 const random = require('@grunmouse/big-random');
-const assert = require('assert');
 
 const TupleArb = require('./arbitrary/tuple.js');
 
@@ -110,16 +109,37 @@ function check(arbitrary, property){
 	
 }
 
-function property(name, ...args){
+/*
+Предполагается, что последним аргументом идёт функция обратного вызова, а перед ней -
+	- аргументы, описывающие генерируемые значения, которые потом передадутся в эту функцию
+	
+	
+*/
+function curryCheck(args){
 	const property = args.pop();
 	const arbs = args;
 	const arbitrary = arbs.length>1 ? new InnerTuple(arbs) : arbs[0];
 	if(!arbitrary){
 		throw new Error('No arbitrary');
 	}
-	
+
+	retrun function(){
+		return check(arbitrary, property);
+	};
+}
+
+/**
+ * @param func : Function(name, checker) - функция, оборачивающая вызов библиотечной функции проверки
+ */
+function wrapFuncForProps(func){
+	return function property(name, ...args){
+		return func(name, curryCheck(args);
+	}
+}
+
+const propertyMocha = wrapFuncForProps(function(name, checker){
 	it(name, function(){
-		let res = check(arbitrary, property);
+		let res = checker();
 		if(res && res.err){
 			let test = this.test;
 			/*
@@ -129,10 +149,10 @@ function property(name, ...args){
 			throw res.err;
 		}
 	});
-}
+});
 
 module.exports = {
 	check,
-	property,
+	property:propertyMocha,
 	random
 };

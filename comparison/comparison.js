@@ -1,7 +1,13 @@
 const {
 	arrayDiff,
 	sortedArrayDiff,
-	smallArrayDiff
+	arrayParallelDiff,
+	smallArrayDiff,
+	
+	isIndex,
+	notIsIndex,
+	arrayStatus,
+	sortedDiffMethod
 } = require('./array-diff.js');
 
 const {
@@ -9,65 +15,26 @@ const {
 } = require('./set-diff.js');
 
 const {
-	textDiff
+	textDiff,
+	stringParallelDiff
 } = require('./text-diff.js');
 
-class CompareStatus{
-	constructor(status, difference){
-		this.status = status;
-		this.difference = difference;
-	}
-	
-	valueOf(){
-		return this.status === true || this.status === 'equal';
-	}
-}
-
-function joinStatus(entries, into){
-	let status = true;
-	into = into || {};
-	for(let [key, value] of entries){
-		into[key] = value.difference;
-		status = status && (+value);
-	}
-	
-	return new CompareStatus(status, into);
-}
+const {
+	strict,
+	ignore,
+	approxNumber
+} = require('./cmp-primitive.js');
 
 /*
 support
 */
 
-function isIndex(over, min=0){
-	return (key)=>{
-		key = +key;
-		return !isNaN(key) && key<over && key>=min;
-	};
-}
 
-function notIsIndex(over, min=0){
-	return (key)=>{
-		key = +key;
-		return isNaN(key) || key>=over || key<min;
-	};
-}
-
-function arrayStatus(diff){
-	return diff.length === 1 && diff[0].status === 'common';
-}
 
 function citeObject(source, keys){
 	let result = {};
 	for(let key of keys){
-		result[key] = source[key]
-	}
-	return result;
-}
-
-function citeMap(source, keys){
-	let result = new Map();
-	for(let key of keys){
-		result.set(key, source.get(key));
+		result[key] = source[key];
 	}
 	return result;
 }
@@ -93,6 +60,16 @@ function propsByKeys(a, b, aKey, bKey, itemCompare){
 		}
 	);
 }
+
+function citeMap(source, keys){
+	let result = new Map();
+	for(let key of keys){
+		result.set(key, source.get(key));
+	}
+	return result;
+}
+
+
 function mapItemsByKeys(a, b, aKey, bKey, itemCompare){
 	let {added, deleted, common} = setDiff(aKey, bKey);
 	
@@ -126,29 +103,37 @@ function diffStruct(a, b, fields, into){
 	return {status, diff:into};
 }
 
-function ext(getExtKeys, extItemCompare){
-	return function(a, b){
-		let extKeysA = getExtKeys(a);
-		let extKeysB = getExtKeys(b);
-		
-		return propsByKeys(a, b, extKeysA, extKeysB, extItemCompare);
+function ext(extItemCompare){
+	return function ext(getExtKeys){
+		return function(a, b){
+			let extKeysA = getExtKeys(a);
+			let extKeysB = getExtKeys(b);
+			
+			return propsByKeys(a, b, extKeysA, extKeysB, extItemCompare);
+		}
 	}
 }
 
-function tail(start, itemCompare){
+function tail(start, tailCompare){
 	return function(a, b){
-		let diff = arrayDiff(a.slice(start), b.slice(start), itemCompare);
-		let status = diff.length === 1 && diff[0].status === 'common';
-		
-		return new CompareStatus(status, diff);		
+		return tailCompare(a.slice(start), b.slice(start));
 	}
 }
 
 
-function joinComparator(entries, Into){
-	function(a, b){
+function joinComparator(entries, Into, argtype){
+	if(typeof Into === 'string'){
+		argtype = Into;
+		Into = undefined;
+	}
+	
+	if(entries.length === 1){
+		return entries[0][1];
+	}
+	
+	const fun = function(a, b){
 		let status = true;
-		let diff = !!Into ? new Into : {};
+		let diff = !!Into ? new Into() : {};
 		
 		for(let [key, comparator] of entries){
 			let value = comparator(a, b);
@@ -158,6 +143,10 @@ function joinComparator(entries, Into){
 		
 		return new CompareStatus(status, diff);
 	}	
+	
+	fun.argtype = argtype;
+	
+	return fun;
 }
 
 
@@ -168,15 +157,7 @@ function joinComparator(entries, Into){
 /*
 comparators
 */
-function strict(a, b){
-	return new CompareStatus(a === b, {actual:a, expected:b});
-}
 
-function approxNumber(eps){
-	return function(a, b){
-		return new CompareStatus(Math.abs(a-b)<=eps, {actual:a, expected:b, eps});
-	}
-}
 
 function text(a, b){
 	let diff = textDiff(a, b, itemCompare);
@@ -184,33 +165,193 @@ function text(a, b){
 	
 	return new CompareStatus(status, diff);
 }
+text.argtype = "string";
 
-function array(itemCompare){
-	return function(a, b){
-		let diff = arrayDiff(a, b, itemCompare);
+
+
+function array(itemCompare, diffMethod){
+	diffMethod = diffMethod || arrayDiff;
+	let fun = function diff_array(a, b){
+		let diff = diffMethod(a, b, itemCompare);
 		let status = arrayStatus(diff);
 		
 		return new CompareStatus(status, diff);
 	}
+	fun.argtype = "array";
+	return fun;
+}
+
+function arrayParallel(itemCompare){
+	return array(itemCompare, arrayParallelDiff);
+}
+
+function sortedArray(itemCompare, itemSorter){
+	return array(itemCompare, sortedDiffMethod(itemSorter));
 }
 
 function objectAsDict(itemCompare){
-	return function(a, b){
+	let fun = function dict_object(a, b){
 		let aKey = Object.keys(a), bKey = Object.keys(b);
 
 		return propsByKeys(a, b, aKey, bKey, itemCompare);
 	}
+	fun.argtype = "object";
+	return fun;
 }
 
-function map(itemCompare){
-	return function(a, b){
+function objectAsStruct(struct){
+	const fields = Object.entries(struct);
+	let fun = function(a, b){
+		let diff = diffStruct(a, b, fields, {});
+		return new CompareStatus(diff.status, diff.diff);
+	}
+	fun.argtype = "object";
+	return fun;
+}
+
+function tuple_array(struct){
+	const fields = struct.map((value, i)=>([i, value]));
+	let fun = function tuple_array(a, b){
+		let diff = diffStruct(a, b, fields, []);
+		return new CompareStatus(diff.status, diff.diff);
+	}
+	fun.argtype = "array";
+
+	return fun;
+}
+
+function fields_object(config){
+	let extStruct = config.struct;
+	let extComparator = config.ext;
+	
+	
+	let fields = [];
+
+	if(extStruct){
+		fields.push(['struct', objectAsStruct(extStruct)]);
+	}
+	if(extComparator){
+		if(extComparator.name !== 'ext'){
+			extComparator = ext(extComparator);
+		}
+
+		let filter;
+		if(extStruct){
+			if(config.notIndex){
+				filter = (a)=>{
+					const notIndex = notIsIndex(a.length, 0);
+					return (key)=>(notIndex(key) && !extStruct.hasOwnProperty(key));
+				};
+			}
+			else{
+				filter = ()=>(key)=>(!extStruct.hasOwnProperty(key));
+			}
+			
+		}
+		else{
+			if(config.notIndex){
+				filter = (a)=>(notIsIndex(a.length, 0));
+			}
+			else{
+				filter = ()=>()=>(true);
+			}
+		}
+
+		let getExtKeys = (a)=>Object.keys(a).filter(filter(a));
+
+		
+		fields.push(['ext', extComparator(getExtKeys)]);
+	}
+	
+	return fields;
+}
+
+function fields_array(config){
+	let fields = [];
+	let tupleStruct = config.tuple || [];
+	let tailComparator = config.tail;
+	let extStruct = config.struct;
+	let extComparator = config.ext;
+	
+	if(extComparator === true){
+		extComparator = tailComparator;
+	}
+	
+	if(tupleStruct.length > 0){
+		fields.push(['tuple', tuple_array(tupleStruct)]);
+	}
+	if(tailComparator){
+		fields.push([tupleStruct.length > 0 ? 'tail' : 'array', tail(tupleStruct.length, tailCompare)]);
+	}
+	
+	fields.push(...fields_object({struct:extStruct, ext:extComparator, notIndex:true}));
+	
+	return fields;
+}
+
+function tuple(tupleStruct, tailComparator, extStruct, extComparator){
+	if(tailComparator && typeof tailComparator === "function" && tailComparator.name === "ext"){
+		//extComparator 001
+		extComparator = tailComparator;
+		extStruct = undefined;
+		tailComparator = undefined;
+	}
+	else if(tailComparator && typeof tailComparator === "object"){
+		//extStruct 010
+		//extStruct, extComparator 011
+		extComparator = extStruct;
+		extStruct = tailComparator;
+		tailComparator = undefined;
+	}
+	else if(extStruct && typeof extStruct === "function"){
+		//tailComparator, extComparator 101
+		extComparator = extStruct;
+		extStruct = undefined;
+	}
+	//else{
+	//tailComparator 100
+	//tailComparator, extStruct 110
+	//tailComparator, extStruct, extComparator 111
+	//}
+	
+	let fields = fields_array({
+		tuple:tupleStruct,
+		tail:tailComparator,
+		struct:extStruct,
+		ext:extComparator
+	});
+
+	fun = joinComparator(fields);
+
+	return fun;
+}
+
+function struct(extStruct, extComparator){
+	if(extStruct && typeof extStruct === "function"){
+		extComparator = extStruct;
+		extStruct = undefined;
+	}
+	
+
+	let fields = fields_object({struct:extStruct, ext:extComparator});
+
+	fun = joinComparator(fields);
+
+	return fun;
+}
+
+
+function cmpMap(itemCompare){
+	let fun = function(a, b){
 		let aKey = a.keys(), bKey = b.keys();
 		
 		return mapItemsByKeys(a, b, aKey, bKey, itemCompare);
 	}
+	fun.argtype = "Map";
+	return fun;
 }
 
-function set(a, b){
+function cmpSet(a, b){
 	let diff = setDiff(a, b);
 	
 	let status = (added.size === 0) && (deleted.size === 0);
@@ -218,91 +359,56 @@ function set(a, b){
 	return new CompareStatus(status, diff);
 }
 
-function objectAsStruct(struct){
-	const fields = Object.entries(struct);
-	return function(a, b){
-		let diff = diffStruct(a, b, fields, {});
-		return new CompareStatus(diff.status, diff.diff);
+cmpSet.argtype = "Set";
+
+function set(a, b){
+	if(a && b){
+		return cmpSet(a, b);
 	}
-}
-
-function tuple(struct){
-	const fields = struct.map((value, i)=>([i, value]));
-	return function(a, b){
-		let diff = diffStruct(a, b, fields, []);
-		return new CompareStatus(diff.status, diff.diff);
-	}
-}
-
-function arrayExt(itemCompare, extItemCompare){
-	extItemCompare = extItemCompare || itemCompare;
-	
-	const getExtKeys = (a)=>Object.keys(a).filter(notIsIndex(a.length, 0));
-	
-	return joinComparator([['array', array(itemCompare)], ['ext', ext(getExtKeys, extItemCompare)]]);
-}
-
-function structExt(struct, extItemCompare){
-	
-	function getExtKey(a){
-		return Object.keys(a).filter((key)=>(!struct.hasOwnProperty(key)));
+	if(!b && typeof a === 'object'){
+		return propExtWrapper(['set', cmpSet], a);
 	}
 	
-	return joinComparator([['struct', objectAsStruct(struct)], ['ext', ext(getExtKeys, extItemCompare)]]);
+	return cmpSet;
 }
 
-function mapExt(itemCompare, extItemCompare){
-	extItemCompare = extItemCompare || itemCompare;
+set.argtype = "Set";
+
+function propExtWrapper(base, extConfig){
+	let extFields = Array.isArray(extConfig) ? extConfig : fields_object(extConfig);
 	
-	const getExtKeys = (a)=>Object.keys(a);
+	let fields = [base,	...extFields];
 	
-	return joinComparator([['map', map(itemCompare)], ['ext', ext(getExtKeys, extItemCompare)]]);
+	return joinComparator(fields);
 }
 
-function setExt(extItemCompare){
-	extItemCompare = extItemCompare || itemCompare;
-	
-	const getExtKeys = (a)=>Object.keys(a);
-	
-	return joinComparator([['set', set], ['ext', ext(getExtKeys, extItemCompare)]]);
+function map(itemCompare, extConfig){
+	return propExtWrapper(['map', cmpMap(itemCompare)], extConfig);
 }
 
-function tupleExt(struct, extItemCompare){
-	
-	const getExtKeys = (a)=>Object.keys(a).filter(notIsIndex(a.length));
-	
-	return joinComparator([['tuple', tuple(struct)], ['ext', ext(getExtKeys, extItemCompare)]]);
-}
-
-function tupleLong(struct, itemCompare){
-	const tupleCompare = tuple(struct);
-	const arrayCompare = array(itemCompare);
-	const tupleLen = struct.length;
-	
-	return joinComparator([['tuple', tuple(struct)], ['tail', tail(tupleLen, itemCompare)]]);
-}
 
 
 module.exports = {
 	strict,
+	ignore,
 	
 	approxNumber,
 	
 	text,
 	
 	array,
+	arrayParallel,
+	sortedArray,
 	tuple,
-	arrayExt,
-	tupleExt,
-	tupleLong,
+
 	
 	objectAsDict,
 	objectAsStruct,
-	structExt,
+	struct,
 	
 	map,
-	mapExt,
 	
 	set,
-	setExt
+	
+	joinComparator
 };
