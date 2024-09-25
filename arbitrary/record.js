@@ -2,6 +2,7 @@
 const ArbitraryBase = require('./arbitrary-base.js');
 
 const RecordArb = ArbitraryBase.extend(
+	{notDefault:true},
 	{
 		init:function(fields){
 			this._fields = Object.entries(fields);

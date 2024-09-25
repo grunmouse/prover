@@ -6,6 +6,7 @@ const ArbitraryBase = require('./arbitrary-base.js');
  * Чтобы использовать, надо определить _finalConvert
  */
 const ConvertBaseArb = ArbitraryBase.extend(
+	{notDefault:true},
 	{
 		/**
 		 * @param arb : TupleArb|ArrayArb - генератор массива (возможно многоуровневого) кодовых точек
@@ -22,7 +23,7 @@ const ConvertBaseArb = ArbitraryBase.extend(
 				this._super();
 			}
 		},
-
+		
 		_convert: function(value){
 			return this._arb.convert(value);
 		},
