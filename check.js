@@ -123,7 +123,7 @@ function curryCheck(args){
 		throw new Error('No arbitrary');
 	}
 
-	retrun function(){
+	return function(){
 		return check(arbitrary, property);
 	};
 }
@@ -133,7 +133,7 @@ function curryCheck(args){
  */
 function wrapFuncForProps(func){
 	return function property(name, ...args){
-		return func(name, curryCheck(args);
+		return func(name, curryCheck(args));
 	}
 }
 
