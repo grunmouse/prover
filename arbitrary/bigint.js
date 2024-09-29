@@ -10,6 +10,7 @@ const ArbitraryBase = require('./arbitrary-base.js');
 
 const BigIntegerArb = ArbitraryBase.extend(
 	'BigIntArbitrary',
+	{defaultConfig:[]},
 	{
 		setup:convert.ensureIntegerArgs,
 		

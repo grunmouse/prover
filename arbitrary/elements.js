@@ -7,9 +7,6 @@ const ArbitraryBase = require('./arbitrary-base.js');
 const ElementArb = ArbitraryBase.extend(
 	'ElementsArbitrary',
 	{
-		notDefault:true
-	},
-	{
 		init:function(arr){
 			this._elements = arr;
 			let limit = arr.length-1;

@@ -1,4 +1,8 @@
-const random = require('@grunmouse/big-random');
+const {RC4small} = require('@grunmouse/big-random');
+
+const random = new RC4small();
+
+const randomBigUintLim = random.randomBigUintLim.bind(random);
 
 const TupleArb = require('./arbitrary/tuple.js');
 
@@ -16,14 +20,16 @@ function doThrow(fun, arg){
 function check(arbitrary, property){
 	/*
 	 Здесь что-нибудь про инициализацию
+	 	
+	 random.setStateString
 	*/
 	let count = 100;
 	let firstValue, firstError;
-	let rndState;
+	let rndState; //Состояние перед вызовом последнего
 	
 	for(let i=0; i<count; ++i){
 		rndState = random.currentStateString();
-		firstValue = arbitrary.generate(random.randomBigUintLim);
+		firstValue = arbitrary.generate(randomBigUintLim);
 		try{
 			let result;
 			if(arbitrary instanceof InnerTuple){
@@ -112,7 +118,7 @@ function check(arbitrary, property){
 /*
 Предполагается, что последним аргументом идёт функция обратного вызова, а перед ней -
 	- аргументы, описывающие генерируемые значения, которые потом передадутся в эту функцию
-	
+
 	
 */
 function curryCheck(args){
@@ -130,6 +136,10 @@ function curryCheck(args){
 
 /**
  * @param func : Function(name, checker) - функция, оборачивающая вызов библиотечной функции проверки
+ * @return Function(name, ...arbitrary, property)
+ *		@param name : String
+ *		@param ...arbitrary : Arbitrary - одно или несколько генерируемых значений
+ *		@param property : Function(...values) - функция, проверяющая условие
  */
 function wrapFuncForProps(func){
 	return function property(name, ...args){
@@ -154,5 +164,6 @@ const propertyMocha = wrapFuncForProps(function(name, checker){
 module.exports = {
 	check,
 	property:propertyMocha,
-	random
+	random,
+	randomBigUintLim
 };

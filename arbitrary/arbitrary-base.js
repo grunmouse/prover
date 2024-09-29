@@ -54,8 +54,8 @@ const ArbitraryBase = Class.extend(
 			
 			let cls = this._super(name, klass, proto);
 			
-			if(!cls.notDefault){
-				let dflt = new cls();
+			if(cls.defaultConfig){
+				let dflt = new cls(...cls.defaultConfig);
 				['generate', 'convert', 'shrink', 'all', 'stringify'].forEach((key)=>{
 					cls[key] = dflt.proxy(key);
 				});

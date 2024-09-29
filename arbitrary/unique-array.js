@@ -8,7 +8,6 @@ const  {
 const ArbitraryBase = require('./arbitrary-base.js');
 
 const UArrayArb = ArbitraryBase.extend(
-	{notDefault:true},
 	{
 		init:function(size, type){
 			if(type.call){

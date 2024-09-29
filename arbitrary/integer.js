@@ -8,6 +8,7 @@ const convert = require('../convert/index.js');
 const ArbitraryBase = require('./arbitrary-base.js');
 
 const IntegerArb = ArbitraryBase.extend(
+	{defaultConfig:[]},
 	{
 		setup:convert.ensureIntegerArgs,
 		

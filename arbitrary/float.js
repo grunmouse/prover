@@ -10,6 +10,8 @@ const ArbitraryBase = require('./arbitrary-base.js');
 
 const SimpleFloatArbBase = ArbitraryBase.extend(
 	{
+		defaultConfig:[],
+		
 		extend:function(opendown, openup){
 			const toFloat = convert.uint32ToFloat(opendown, openup);
 			

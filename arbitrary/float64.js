@@ -7,6 +7,7 @@ const convert = require('../convert/index.js');
 const FloatArbitrary = ArbitraryBase.extend(
 	'FloatArbitrary',
 	{
+		defaultConfig:[]
 	},
 	{
 		setup:convert.ensureFloatArgs,

@@ -4,10 +4,7 @@ const {BigIntPacker} = require('../convert/index.js');
 
 const TupleArb = ArbitraryBase.extend(
 	'TupleArbitrary',
-	{
-		notDefault:true
-	},
-	{
+{
 		init:function(arbs){
 			arbs = arbs.map((a)=>(a.call ? a() : a));
 			this._fields = arbs;

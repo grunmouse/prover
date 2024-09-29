@@ -4,7 +4,6 @@ const convert = require('../convert/index.js');
 const ArbitraryBase = require('./arbitrary-base.js');
 
 const UnionArb = ArbitraryBase.extend(
-	{notDefault:true},
 	{
 		init:function(arbs){
 			arbs = arbs.map((a)=>(a.call ? a() : a));

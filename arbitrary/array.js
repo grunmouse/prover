@@ -9,7 +9,6 @@ const {integer} = require('./primitive.js');
  * Массив заданной длины
  */
 const SizedArrayArb = ArbitraryBase.extend(
-	{notDefault:true},
 	{
 		init:function(size, type){
 			if(type.call){
@@ -45,7 +44,6 @@ const SizedArrayArb = ArbitraryBase.extend(
  * Массив длиной не больше заданной (возможно - пустой)
  */
 const LimitedArrayArb = ArbitraryBase.extend(
-	{notDefault:true},
 	{
 		init:function(size, type){
 			if(type.call){
@@ -94,8 +92,6 @@ const LimitedArrayArb = ArbitraryBase.extend(
 
 const ArrayArb = ArbitraryBase.extend(
 	{
-		notDefault:true,
-		
 		newInstance:function(range, type){
 			if(!type){
 				type = range;

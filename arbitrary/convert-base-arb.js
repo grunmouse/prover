@@ -2,11 +2,10 @@
 const ArbitraryBase = require('./arbitrary-base.js');
 
 /**
- * База обёртка
+ * Абстрактная обёртка
  * Чтобы использовать, надо определить _finalConvert
  */
 const ConvertBaseArb = ArbitraryBase.extend(
-	{notDefault:true},
 	{
 		/**
 		 * @param arb : TupleArb|ArrayArb - генератор массива (возможно многоуровневого) кодовых точек
