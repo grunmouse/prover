@@ -3,13 +3,14 @@ const random = require('./random.js');
 /**
  * @param wheel : Array<Int32>
  */
-function roulette(wheel){
+function roulette(wheel, random){
+	
 	const len = wheel.length;
 	let sr = wheel.reduce((akk, x)=>(akk+x/len), 0);
 	
 	const prob = wheel.slice(0);
 	const alias = [];
-	const s = new Set(Object.keys(wheel).map(Number));
+	const s = new Set(wheel.map((_,i)=>(i)));
 	
 	function setAlias(al, into){
 		let move = sr - prob[into];
@@ -27,8 +28,8 @@ function roulette(wheel){
 	}
 	
 	return ()=>{
-		let x = random.integer(i, len-1);
-		let y = randomBool(prob[x], sr);
+		let x = random.randomUint32Lim(0, len-1);
+		let y = random.randomUint32Lim(sr)<prob[x];;
 		
 		return y ? x : alias[x];
 	}
