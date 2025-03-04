@@ -1,5 +1,7 @@
-
+const {check, property, wrapFuncForProps} = require('./check.js');
 module.exports = {
-	property: require('./check.js').property,
+	property,
+	check,
+	wrapFuncForProps,
 	arb: require('./arbitrary/index.js')
 }

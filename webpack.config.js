@@ -8,7 +8,7 @@ module.exports = {
   output: {
 	library: {
       name: 'prover',
-	  type: 'this'
+	  type: 'window'
     },
 	   
     filename: 'prover.js',

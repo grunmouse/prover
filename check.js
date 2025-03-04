@@ -4,6 +4,8 @@ const random = new RC4small();
 
 const randomBigUintLim = random.randomBigUintLim.bind(random);
 
+const findParameter = require('./get-parameter.js');
+
 const TupleArb = require('./arbitrary/tuple.js');
 
 const InnerTuple = TupleArb.extend({});
@@ -23,6 +25,14 @@ function check(arbitrary, property){
 	 	
 	 random.setStateString
 	*/
+	
+	{
+		let rndState = findParameter('proverRndState');
+		if(rndState){
+			random.setStateString(rndState);
+		}
+	}
+	
 	let count = 100;
 	let firstValue, firstError;
 	let rndState; //Состояние перед вызовом последнего
@@ -163,6 +173,7 @@ const propertyMocha = wrapFuncForProps(function(name, checker){
 
 module.exports = {
 	check,
+	wrapFuncForProps,
 	property:propertyMocha,
 	random,
 	randomBigUintLim

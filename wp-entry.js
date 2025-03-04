@@ -1,3 +1,3 @@
 const prover = require('./index.js');
 
-module.exports.prover = prover;
+module.exports = prover;

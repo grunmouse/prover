@@ -360,7 +360,7 @@ class RC4small extends AbstractRC4{
 	};
 
 	setStateString(stateString) {
-		if (!stateString.match(/^[0-9a-f]{18}$/)) {
+		if (!stateString.match(/^[0-9a-f]{18}$/i)) {
 			throw new TypeError("RC4small stateString should be 18 hex character string");
 		}
 		
@@ -440,8 +440,8 @@ const ArbitraryBase = Class.extend(
 			
 			let cls = this._super(name, klass, proto);
 			
-			if(!cls.notDefault){
-				let dflt = new cls();
+			if(cls.defaultConfig){
+				let dflt = new cls(...cls.defaultConfig);
 				['generate', 'convert', 'shrink', 'all', 'stringify'].forEach((key)=>{
 					cls[key] = dflt.proxy(key);
 				});
@@ -534,7 +534,6 @@ const {integer} = __webpack_require__(597);
  * Массив заданной длины
  */
 const SizedArrayArb = ArbitraryBase.extend(
-	{notDefault:true},
 	{
 		init:function(size, type){
 			if(type.call){
@@ -570,7 +569,6 @@ const SizedArrayArb = ArbitraryBase.extend(
  * Массив длиной не больше заданной (возможно - пустой)
  */
 const LimitedArrayArb = ArbitraryBase.extend(
-	{notDefault:true},
 	{
 		init:function(size, type){
 			if(type.call){
@@ -619,8 +617,6 @@ const LimitedArrayArb = ArbitraryBase.extend(
 
 const ArrayArb = ArbitraryBase.extend(
 	{
-		notDefault:true,
-		
 		newInstance:function(range, type){
 			if(!type){
 				type = range;
@@ -723,6 +719,7 @@ const ArbitraryBase = __webpack_require__(550);
 
 const BigIntegerArb = ArbitraryBase.extend(
 	'BigIntArbitrary',
+	{defaultConfig:[]},
 	{
 		setup:convert.ensureIntegerArgs,
 		
@@ -762,6 +759,7 @@ const ArbitraryBase = __webpack_require__(550);
 
 const BooleanArb = ArbitraryBase.extend(
 	'BooleanArbitrary',
+	{defaultConfig:[]},
 	{
 		init:function(){
 			this._super(1);
@@ -1103,11 +1101,10 @@ module.exports = ConstArb;
 const ArbitraryBase = __webpack_require__(550);
 
 /**
- * База обёртка
+ * Абстрактная обёртка
  * Чтобы использовать, надо определить _finalConvert
  */
 const ConvertBaseArb = ArbitraryBase.extend(
-	{notDefault:true},
 	{
 		/**
 		 * @param arb : TupleArb|ArrayArb - генератор массива (возможно многоуровневого) кодовых точек
@@ -1185,9 +1182,6 @@ const ArbitraryBase = __webpack_require__(550);
 const ElementArb = ArbitraryBase.extend(
 	'ElementsArbitrary',
 	{
-		notDefault:true
-	},
-	{
 		init:function(arr){
 			this._elements = arr;
 			let limit = arr.length-1;
@@ -1219,6 +1213,8 @@ const ArbitraryBase = __webpack_require__(550);
 
 const SimpleFloatArbBase = ArbitraryBase.extend(
 	{
+		defaultConfig:[],
+		
 		extend:function(opendown, openup){
 			const toFloat = convert.uint32ToFloat(opendown, openup);
 			
@@ -1298,6 +1294,7 @@ const convert = __webpack_require__(677);
 const ArbitraryBase = __webpack_require__(550);
 
 const IntegerArb = ArbitraryBase.extend(
+	{defaultConfig:[]},
 	{
 		setup:convert.ensureIntegerArgs,
 		
@@ -1411,7 +1408,6 @@ module.exports = {
 const ArbitraryBase = __webpack_require__(550);
 
 const RecordArb = ArbitraryBase.extend(
-	{notDefault:true},
 	{
 		init:function(fields){
 			this._fields = Object.entries(fields);
@@ -1489,10 +1485,7 @@ const {BigIntPacker} = __webpack_require__(677);
 
 const TupleArb = ArbitraryBase.extend(
 	'TupleArbitrary',
-	{
-		notDefault:true
-	},
-	{
+{
 		init:function(arbs){
 			arbs = arbs.map((a)=>(a.call ? a() : a));
 			this._fields = arbs;
@@ -1541,7 +1534,6 @@ const convert = __webpack_require__(677);
 const ArbitraryBase = __webpack_require__(550);
 
 const UnionArb = ArbitraryBase.extend(
-	{notDefault:true},
 	{
 		init:function(arbs){
 			arbs = arbs.map((a)=>(a.call ? a() : a));
@@ -1590,7 +1582,6 @@ const  {
 const ArbitraryBase = __webpack_require__(550);
 
 const UArrayArb = ArbitraryBase.extend(
-	{notDefault:true},
 	{
 		init:function(size, type){
 			if(type.call){
@@ -1626,7 +1617,13 @@ module.exports = UArrayArb;
 /***/ 265:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const random = __webpack_require__(468);
+const {RC4small} = __webpack_require__(468);
+
+const random = new RC4small();
+
+const randomBigUintLim = random.randomBigUintLim.bind(random);
+
+const findParameter = __webpack_require__(111);
 
 const TupleArb = __webpack_require__(390);
 
@@ -1644,14 +1641,24 @@ function doThrow(fun, arg){
 function check(arbitrary, property){
 	/*
 	 Здесь что-нибудь про инициализацию
+	 	
+	 random.setStateString
 	*/
+	
+	{
+		let rndState = findParameter('proverRndState');
+		if(rndState){
+			random.setStateString(rndState);
+		}
+	}
+	
 	let count = 100;
 	let firstValue, firstError;
-	let rndState;
+	let rndState; //Состояние перед вызовом последнего
 	
 	for(let i=0; i<count; ++i){
 		rndState = random.currentStateString();
-		firstValue = arbitrary.generate(random.randomBigUintLim);
+		firstValue = arbitrary.generate(randomBigUintLim);
 		try{
 			let result;
 			if(arbitrary instanceof InnerTuple){
@@ -1740,7 +1747,7 @@ function check(arbitrary, property){
 /*
 Предполагается, что последним аргументом идёт функция обратного вызова, а перед ней -
 	- аргументы, описывающие генерируемые значения, которые потом передадутся в эту функцию
-	
+
 	
 */
 function curryCheck(args){
@@ -1758,6 +1765,10 @@ function curryCheck(args){
 
 /**
  * @param func : Function(name, checker) - функция, оборачивающая вызов библиотечной функции проверки
+ * @return Function(name, ...arbitrary, property)
+ *		@param name : String
+ *		@param ...arbitrary : Arbitrary - одно или несколько генерируемых значений
+ *		@param property : Function(...values) - функция, проверяющая условие
  */
 function wrapFuncForProps(func){
 	return function property(name, ...args){
@@ -1781,8 +1792,10 @@ const propertyMocha = wrapFuncForProps(function(name, checker){
 
 module.exports = {
 	check,
+	wrapFuncForProps,
 	property:propertyMocha,
-	random
+	random,
+	randomBigUintLim
 };
 
 /***/ }),
@@ -2098,12 +2111,61 @@ module.exports = {
 
 /***/ }),
 
+/***/ 111:
+/***/ ((module) => {
+
+function getParameter(paramName) {
+  let paramValue;
+  if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+    // Запущено в Node.js
+    const args = process.argv.slice(2);
+	paramName = '--' + paramName;
+    const paramArgIndex = args.findIndex(arg => arg.startsWith(paramName));
+    if (paramArgIndex>-1) {
+      const paramArg = args[paramArgIndex];
+      // Если параметр в формате --имя_параметра=значение
+      if (paramArg.includes('=')) {
+        paramValue = paramArg.split('=')[1] // Возвращаем значение параметра
+      }
+	  else {
+        // Если параметр в формате --имя_параметра значение
+         paramValue = args[paramArgIndex + 1] // Возвращаем следующее значение после параметра
+      }
+    }
+  } 
+  else if (typeof window !== 'undefined') {
+    // Запущено в браузере
+    const url = new URL(window.location.href);
+    const params = Object.fromEntries(url.searchParams.entries());
+    
+    // Проверяем GET-параметры
+    if (params[paramName]) {
+      paramValue = params[paramName] // Возвращаем значение параметра из GET-параметров
+    }
+    else{
+		// Проверяем хэш
+		const hashParams = new URLSearchParams(window.location.hash.slice(1));
+		if (hashParams.has(paramName)) {
+		  paramValue = hashParams.get(paramName) // Возвращаем значение параметра из хэша
+		}
+	}
+  }
+  
+  return paramValue;
+}
+
+module.exports = getParameter;
+
+/***/ }),
+
 /***/ 237:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-
+const {check, property, wrapFuncForProps} = __webpack_require__(265);
 module.exports = {
-	property: (__webpack_require__(265).property),
+	property,
+	check,
+	wrapFuncForProps,
 	arb: __webpack_require__(60)
 }
 
@@ -2176,7 +2238,7 @@ module.exports = {
 
 const prover = __webpack_require__(237);
 
-module.exports.prover = prover;
+module.exports = prover;
 
 /***/ })
 
@@ -2210,9 +2272,9 @@ module.exports.prover = prover;
 /******/ 	
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	// This entry module used 'module' so it can't be inlined
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
 /******/ 	var __webpack_exports__ = __webpack_require__(327);
-/******/ 	this.prover = __webpack_exports__;
+/******/ 	window.prover = __webpack_exports__;
 /******/ 	
 /******/ })()
 ;
