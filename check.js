@@ -25,6 +25,8 @@ function check(arbitrary, property){
 	 	
 	 random.setStateString
 	*/
+	const random = new RC4small();
+	const randomBigUintLim = random.randomBigUintLim.bind(random);
 	
 	{
 		let rndState = findParameter('proverRndState');
@@ -32,6 +34,7 @@ function check(arbitrary, property){
 			random.setStateString(rndState);
 		}
 	}
+	
 	
 	let count = 100;
 	let firstValue, firstError;
